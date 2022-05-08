@@ -69,6 +69,7 @@ const Tabs = () => {
                             }}>Home</Text>
                     </View>
                 ),
+                headerShown: false  // 把導航列的標題隱藏
             }} />
             <Tab.Screen name="CreateInfo" component={CreateInfoScreen} options={{
                 tabBarIcon: ({ focused }) => (
@@ -89,6 +90,7 @@ const Tabs = () => {
                             }}>CreateInfo</Text>
                     </View>
                 ),
+                headerShown: false  // 把導航列的標題隱藏
             }} />
             <Tab.Screen name="PPP" component={PPPScreen} options={{
                 tabBarIcon: ({ focused }) => (
@@ -105,7 +107,8 @@ const Tabs = () => {
                 ),
                 tabBarButton: (props) => (
                     <CustomTabBarButton {...props} />
-                )
+                ),
+                headerShown: false  // 把導航列的標題隱藏
             }} />
             <Tab.Screen name="QueryModify" component={QueryModifyScreen} options={{
                 tabBarIcon: ({ focused }) => (
@@ -126,6 +129,7 @@ const Tabs = () => {
                             }}>QueryModify</Text>
                     </View>
                 ),
+                headerShown: false  // 把導航列的標題隱藏
             }} />
             <Tab.Screen name="StatAnalysis" component={StatAnalysisScreen} options={{
                 tabBarIcon: ({ focused }) => (
@@ -146,6 +150,7 @@ const Tabs = () => {
                             }}>StatAnalysis</Text>
                     </View>
                 ),
+                headerShown: false  // 把導航列的標題隱藏
             }} />
         </Tab.Navigator>
     );

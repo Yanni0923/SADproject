@@ -4,7 +4,7 @@ import { COLORS, SIZES } from "../constants";
 import * as data from '../data/QuizData.json';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const PPPScreen = ({ navigation }) => {
+const Quiz = () => {
 
     const allQuestions = data.data;
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -75,7 +75,6 @@ const PPPScreen = ({ navigation }) => {
             useNativeDriver: false
         }).start();
     }
-
 
     const renderQuestion = () => {
         return (
@@ -233,7 +232,6 @@ const PPPScreen = ({ navigation }) => {
                 backgroundColor: COLORS.background,
                 position: 'relative'
             }}>
-
                 {/* ProgressBar */}
                 {renderProgressBar()}
 
@@ -325,4 +323,5 @@ const PPPScreen = ({ navigation }) => {
     )
 }
 
-export default PPPScreen;
+
+export default Quiz;

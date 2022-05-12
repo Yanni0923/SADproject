@@ -98,7 +98,8 @@
                 "Neptune",
                 "Mercury"
             ],
-            "correct_option": "Jupiter"
+            "correct_option": "Jupiter",
+            "type": "player"
         },
         {
             "question": "What attraction in India is one of the famus in the world?",
@@ -107,7 +108,8 @@
                 "Taj Mahal",
                 "Stadium"
             ],
-            "correct_option": "Taj Mahal"
+            "correct_option": "Taj Mahal",
+            "type": "player"
         },
         {
             "question": "What land animal can open its mouth the widest?",
@@ -117,7 +119,8 @@
                 "Baboon",
                 "Hippo"
             ],
-            "correct_option": "Hippo"
+            "correct_option": "Hippo",
+            "type": "game"
         },
         {
             "question": "What is the largest animal on Earth?",
@@ -127,7 +130,8 @@
                 "The sperm whale",
                 "The giant squid"
             ],
-            "correct_option": "The blue whale"
+            "correct_option": "The blue whale",
+            "type": "team"
         },
         {
             "question": "What is the only flying mammal?",
@@ -137,7 +141,8 @@
                 "The bald eagle",
                 "The colugo"
             ],
-            "correct_option": "The bat"
+            "correct_option": "The bat",
+            "type": "team"
         }
     ]
 }

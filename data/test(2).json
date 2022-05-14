@@ -1,0 +1,233 @@
+
+
+
+{
+    "games": [
+        {
+            "options": {
+                "台大": [
+                    "台大 vs 台藝大",
+                    "台大 vs 台科大"
+                ],
+                "台藝大": [
+                    "台藝大 vs 哈哈哈哈哈",
+                    "台藝大 vs 嘻嘻嘻嘻嘻"
+                ],
+                "台師大": [
+                    "台師大 vs 哈哈哈哈哈",
+                    "台師大 vs 嘻嘻嘻嘻嘻"
+                ],
+                "台科大": [
+                    "台藝大 vs 啦啦啦啦啦啦"
+                ]
+            }
+        }
+    ],
+    "teams": [
+        "台大",
+        "台藝大",
+        "台師大",
+        "台科大"
+    ],
+    "players": [
+        {
+            "台大": [
+                "李妍伶",
+                "歐崇愷",
+                "管晟宇",
+                "高何銓",
+                "孫子龍",
+                "張庭庸"
+            ],
+            "台師大": [
+                "誰誰誰"
+            ]
+        }
+    ],
+    "ppp_1": [
+        "Transition",
+        "Catch & Shoot",
+        "Eat Cake",
+        "Atk Close-out",
+        "P&R BH",
+        "Iso",
+        "Put Back",
+        "Right Post (D)",
+        "Left Post (D)",
+        "Off screen",
+        "Cut",
+        "P&R Men",
+        "Hand Off",
+        "Others"
+
+    ],
+    "ppp_2": [
+        {
+            "Transition": [
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Right shoulder",
+                "Left shoulder",
+                "Others"
+
+            ],
+            "Catch & Shoot": [
+                "Shot",
+                "Others"
+            ],
+            "Eat Cake": [
+                "Set shot",
+                "Others"
+            ],
+            "Atk Close-out": [
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Others"
+            ],
+            "P&R BH": [
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                
+                "Others"
+
+            ],
+            "Iso": [
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Others"
+
+            ],
+            "Put Back": [
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Others"
+
+            ],
+            "Right Post (D)": [
+                "Right shoulder",
+                "Left shoulder",
+                "Face up",
+                "Post pin",
+                "Others"
+
+
+            ],
+            "Left Post (D)": [
+                "Right shoulder",
+                "Left shoulder",
+                "Face up",
+                "Post pin",
+                "Others"
+
+            ],
+            "Off screen": [
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Others"
+
+            ],
+            "Cut": [
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Others"
+
+            ],
+            "P&R Men":[
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Others"
+
+            ],
+            "Hand Off": [
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Others"
+
+            ],
+            "Others": [
+                "Set shot",
+                "Drive right",
+                "Drive left",
+                "Drive others",
+                "Pull-up right",
+                "Pull-up left",
+                "Pull-up others",
+                "Turnover",
+                "Others"
+
+            ],
+
+        }
+    ],
+    "ppp_3": {
+        "P&R BH":[
+            "2y",  
+            "2x", 
+            "3y",
+            "3x",
+            "1p",
+            "1y",
+            "1x",
+            "Pass Others",
+            "Pass PM",
+            "TO",
+            "Add"
+        ],
+        "Other":[
+            "2y",  
+            "2x", 
+            "3y",
+            "3x",
+            "1p",
+            "1y",
+            "1x",
+            "Pass",
+            "TO",
+            "Add"
+        ]
+    }
+}

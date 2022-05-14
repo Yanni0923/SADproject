@@ -1,62 +1,236 @@
 {
     "games": [
+
         {
             "options": {
-                "台大": [
-                    "台大 vs 台藝大",
-                    "台大 vs 台科大"
+                "台灣大學": [
+                    "台灣大學 vs 台藝大",
+                    "台灣大學 vs 台科大"
                 ],
                 "台藝大": [
-                    "台藝大 vs 哈哈哈哈哈",
-                    "台藝大 vs 嘻嘻嘻嘻嘻"
+                    "台藝大 vs 台師大",
+                    "台藝大 vs 台科大"
                 ],
                 "台師大": [
-                    "台師大 vs 哈哈哈哈哈",
-                    "台師大 vs 嘻嘻嘻嘻嘻"
+                    "台師大 vs 台藝大",
+                    "台師大 vs 台灣大學"
                 ],
                 "台科大": [
-                    "台藝大 vs 啦啦啦啦啦啦"
+                    "台藝大 vs 台灣大學"
                 ]
             }
         }
     ],
-    "teams": [
-        "台大",
-        "台藝大",
-        "台師大",
-        "台科大"
-    ],
-    "players": [
-        {
-            "台大": [
-                "李妍伶",
-                "歐崇愷",
-                "管晟宇",
-                "高何銓",
-                "孫子龍",
-                "張庭庸"
-            ],
-            "台師大": [
-                "誰誰誰"
-            ]
-        }
-    ],
-    "ppp_1": [
-        "Transition",
-        "Catch & Shoot"
-    ],
-    "ppp_2": [
-        {
-            "Transition": [
-                "Set shot",
-                "Drive right"
-            ],
-            "Catch & Shoot": [
-                "Set shot",
-                "Drive right"
-            ]
-        }
-    ],
+"teams": [
+    "台灣大學",
+    "僑光科大"
+],
+"players": [
+    {
+        "台灣大學": [
+            "蘇恩霈",
+            "游柏仁",
+            "陳大麒",
+            "廖柏誠",
+            "吳奕賢",
+            "陳品程",
+            "歐崇愷",
+            "林哲安",
+            "張健爾",
+            "夏佳宏",
+            "陳威宇",
+            "李方暐",
+            "陳威樺",
+            "謝長霖",
+            "徐子惇",
+            "陳顥之",
+            "王奕中",
+            "蔡秉杰",
+            "王致善",
+            "林宥廷",
+            "溫啟瑋",
+            "楊曜斌",
+            "林稚荃",
+            "陳喆",
+            "林睦容",
+            "郭縉"
+        ],
+        "僑光科大": [
+            "邱佳豪",
+            "劉佳沅",
+            "鍾凱聖",
+            "盧緒清",
+            "廖振宏",
+            "林睿陞",
+            "鄭丞堯",
+            "曾尚偉",
+            "高立融",
+            "林明瑋",
+            "楊淯凱",
+            "許宗瑋",
+            "江政穎"
+        ]
+    }
+],
+
+"ppp_1": [
+    "Transition",
+    "Catch & Shoot",
+    "Eat Cake",
+    "Atk Close-out",
+    "P&R BH",
+    "Iso",
+    "Put Back",
+    "Right Post (D)",
+    "Left Post (D)",
+    "Off screen",
+    "Cut",
+    "P&R Men",
+    "Hand Off",
+    "Others"
+
+],
+"ppp_2": [
+    {
+        "Transition": [
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Right shoulder",
+            "Left shoulder",
+            "Others"
+
+        ],
+        "Catch & Shoot": [
+            "Shot",
+            "Others"
+        ],
+        "Eat Cake": [
+            "Set shot",
+            "Others"
+        ],
+        "Atk Close-out": [
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Others"
+        ],
+        "P&R BH": [
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            
+            "Others"
+
+        ],
+        "Iso": [
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Others"
+
+        ],
+        "Put Back": [
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Others"
+
+        ],
+        "Right Post (D)": [
+            "Right shoulder",
+            "Left shoulder",
+            "Face up",
+            "Post pin",
+            "Others"
+
+
+        ],
+        "Left Post (D)": [
+            "Right shoulder",
+            "Left shoulder",
+            "Face up",
+            "Post pin",
+            "Others"
+
+        ],
+        "Off screen": [
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Others"
+
+        ],
+        "Cut": [
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Others"
+
+        ],
+        "P&R Men":[
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Others"
+
+        ],
+        "Hand Off": [
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Others"
+
+        ],
+        "Others": [
+            "Set shot",
+            "Drive right",
+            "Drive left",
+            "Drive others",
+            "Pull-up right",
+            "Pull-up left",
+            "Pull-up others",
+            "Turnover",
+            "Others"
+
+        ]
+    }
+],
     "ppp_3": [
         {
             "Transition": [

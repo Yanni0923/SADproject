@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    Animated,
-    TouchableHighlight,
-    TouchableOpacity,
-    StatusBar,
+import { View, Text, TextInput, TouchableOpacity, Alert,
+    StyleSheet, Animated, TouchableHighlight, StatusBar
 } from 'react-native';
 
-import { SwipeListView } from 'react-native-swipe-list-view';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as notifications from '../model/Notifications.json';
 
 const CreateInfoScreen = ({ navigation }) => {
@@ -24,286 +16,144 @@ const CreateInfoScreen = ({ navigation }) => {
         })),
     );
 
-    const closeRow = (rowMap, rowKey) => {
-        if (rowMap[rowKey]) {
-            rowMap[rowKey].closeRow();
-        }
-        console.log("執行 closeRow()");
-    };
-    const deleteRow = (rowMap, rowKey) => {
-        closeRow(rowMap, rowKey);
-        const newData = [...listData];
-        const prevIndex = listData.findIndex(item => item.key === rowKey);
-        newData.splice(prevIndex, 1);
-        setListData(newData);
-        console.log("執行 deleteRow()");
-    };
+    let isInit = false;
+    let typeSelected = 'Team';
+    const selectType = (type) => {
+        isInit = true;
+        typeSelected = type
+    }
 
-    const onRowDidOpen = rowKey => {
-        console.log('This row opened', rowKey);
-    };
+    const [msgSuccess, setMsgSuccess] = useState('');
+    const [msgError, setMsgError] = useState('');
+    // Team
+    
+    const [team, onChangeTeam] = React.useState('');
+    const [school, onChangeSchool] = React.useState('');
+    const [coach, onChangeCoach] = React.useState('');
+    
+    const onPress = () => {
+        // Insert {team, school, ...} into database
 
-    const onLeftActionStatusChange = rowKey => {
-        console.log('onLeftActionStatusChange', rowKey);
-    };
+        // Error if text input field is blank.
+        // if () {
+        //     setMsgError(() => '*此欄位必填')
+        // }
+        setMsgSuccess(() => '成功新增球隊 ' + team);
+    }
 
-    const onRightActionStatusChange = rowKey => {
-        console.log('onRightActionStatusChange', rowKey);
-    };
-
-    const onRightAction = rowKey => {
-        console.log('onRightAction', rowKey);
-    };
-
-    const onLeftAction = rowKey => {
-        console.log('onLeftAction', rowKey);
-    };
-
-
-    const VisibleItem = props => {
-        const {
-            data,
-            rowHeightAnimatedValue,
-            removeRow,
-            leftActionState,
-            rightActionState,
-        } = props;
-
-        if (rightActionState) {
-            Animated.timing(rowHeightAnimatedValue, {
-                toValue: 0,
-                duration: 100,
-                useNativeDriver: false,
-            }).start(() => {
-                removeRow();
-            });
-        }
-
+    if (typeSelected === 'Team'){
         return (
-            <Animated.View
-                style={[styles.rowFront, { height: rowHeightAnimatedValue }]}>
-                <TouchableHighlight
-                    style={styles.rowFrontVisible}
-                    onPress={() => console.log('Element touched')}
-                    underlayColor={'#aaa'}>
-                    <View>
-                        <Text style={styles.title} numberOfLines={1}>
-                            {data.item.title}
-                        </Text>
-                        <Text style={styles.details} numberOfLines={1}>
-                            {data.item.details}
-                        </Text>
-                    </View>
-                </TouchableHighlight>
-            </Animated.View>
+            <View style={styles.container}>
+                <Text style={styles.heading}>--  新增球隊  --</Text>
+                <Text style={styles.subheading}>球隊名稱</Text>
+                <View style={styles.input}>
+                    <TextInput
+                        onChangeText={onChangeTeam}
+                        value={team}
+                        style={styles.textInput}
+                        placeholder="NTU Owls"
+                    />
+                    <Text style={styles.messageError}>{msgError}</Text>
+                </View>
+                <Text style={styles.subheading}>所屬學校／團體</Text>
+                <View style={styles.input}>
+                    <TextInput
+                        onChangeText={onChangeSchool}
+                        value={school}
+                        style={styles.textInput}
+                        placeholder="國立臺灣大學"
+                    />
+                    <Text style={styles.messageError}>{msgError}</Text>
+                </View>
+                <Text style={styles.subheading}>教練姓名</Text>
+                <View style={styles.input}>
+                    <TextInput
+                        onChangeText={onChangeCoach}
+                        value={coach}
+                        style={styles.textInput}
+                        placeholder="Terry"
+                    />
+                    <Text style={styles.messageError}>{msgError}</Text>
+                </View>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={onPress}    // lert.alert('Button pressed')
+                >
+                    <Text style={styles.btntext}>新增球隊</Text>
+                </TouchableOpacity>
+                <Text style={styles.messageSuccess}>{msgSuccess}</Text>
+            </View>
         );
-    };
+    } else if (typeSelected === 'Game'){
 
-    const renderItem = (data, rowMap) => {
-        const rowHeightAnimatedValue = new Animated.Value(60);
+    } else if (typeSelected === 'Player'){
 
-        return (
-            <VisibleItem
-                data={data}
-                rowHeightAnimatedValue={rowHeightAnimatedValue}
-                removeRow={() => deleteRow(rowMap, data.item.key)}
-            />
-        );
-    };
-
-    const HiddenItemWithActions = props => {
-        const {
-            swipeAnimatedValue,
-            leftActionActivated,
-            rightActionActivated,
-            rowActionAnimatedValue,
-            rowHeightAnimatedValue,
-            onClose,
-            onDelete,
-        } = props;
-
-        if (rightActionActivated) { // 由右向左拉到一個程度，達到某個數字
-            Animated.spring(rowActionAnimatedValue, {
-                toValue: 500,       // 填滿
-                useNativeDriver: false
-            }).start();
-        } else {
-            Animated.spring(rowActionAnimatedValue, {
-                toValue: 75,        // 恢復原樣
-                useNativeDriver: false
-            }).start();
-        }
-
-        return (
-            <Animated.View style={[styles.rowBack, { height: rowHeightAnimatedValue }]}>
-                <Text>Left</Text>
-                {!leftActionActivated && (
-                    <TouchableOpacity
-                        style={[styles.backRightBtn, styles.backRightBtnLeft]}
-                        onPress={onClose}>
-                        <MaterialCommunityIcons
-                            name="close-circle-outline"
-                            size={25}
-                            style={styles.trash}
-                            color="#fff"
-                        />
-                    </TouchableOpacity>
-                )}
-                {!leftActionActivated && (
-                    <Animated.View
-                        style={[
-                            styles.backRightBtn,
-                            styles.backRightBtnRight,
-                            {
-                                flex: 1,
-                                width: rowActionAnimatedValue,
-                            },
-                        ]}>
-                        <TouchableOpacity
-                            style={[styles.backRightBtn, styles.backRightBtnRight]}
-                            onPress={onDelete}>
-                            <Animated.View
-                                style={[
-                                    styles.trash,
-                                    {
-                                        transform: [
-                                            {
-                                                scale: swipeAnimatedValue.interpolate({
-                                                    inputRange: [-90, -45],
-                                                    outputRange: [1, 0],
-                                                    extrapolate: 'clamp',
-                                                }),
-                                            },
-                                        ],
-                                    },
-                                ]}>
-                                <MaterialCommunityIcons
-                                    name="trash-can-outline"
-                                    size={25}
-                                    color="#fff"
-                                />
-                            </Animated.View>
-                        </TouchableOpacity>
-                    </Animated.View>
-                )}
-            </Animated.View>
-        );
-    };
-
-    const renderHiddenItem = (data, rowMap) => {
-        const rowActionAnimatedValue = new Animated.Value(75);
-        const rowHeightAnimatedValue = new Animated.Value(60);
-
-        return (
-            <HiddenItemWithActions
-                data={data}
-                rowMap={rowMap}
-                rowActionAnimatedValue={rowActionAnimatedValue}
-                rowHeightAnimatedValue={rowHeightAnimatedValue}
-                onClose={() => closeRow(rowMap, data.item.key)}
-                onDelete={() => deleteRow(rowMap, data.item.key)}
-            />
-        );
-    };
-
-    return (
-        <View style={styles.container}>
-            <Text>564645456</Text>
-            {/* <StatusBar backgroundColor="#FF6347" barStyle="light-content"/> */}
-            <SwipeListView
-                data={listData}
-                renderItem={renderItem}
-                renderHiddenItem={renderHiddenItem}
-                leftOpenValue={75}
-                rightOpenValue={-150}
-                // disableRightSwipe
-                onRowDidOpen={onRowDidOpen}
-                leftActivationValue={100}
-                rightActivationValue={-200}     // 由右向左拉到 -200 就會 extend 刪除的紅色區域
-                leftActionValue={0}
-                rightActionValue={-500}
-                onLeftAction={onLeftAction}
-                onRightAction={onRightAction}
-                onLeftActionStatusChange={onLeftActionStatusChange}
-                onRightActionStatusChange={onRightActionStatusChange}
-            />
-        </View>
-    );
+    }
 };
-
 
 export default CreateInfoScreen;
 
+
 const styles = StyleSheet.create({
     container: {
+        // format
+        flex: 1,
+        // size
+        padding: '6%',
+        // style
         backgroundColor: '#f4f4f4',
-        flex: 1,
     },
-    backTextWhite: {
-        color: '#FFF',
+    heading: {
+        // format
+        alignSelf: 'center',
+        // size
+        paddingTop: 16,
+        paddingBottom: 30,
+        // style
+        fontSize: '200%',
+        fontWeight: 500
     },
-    rowFront: {
-        backgroundColor: '#FFF',
-        borderRadius: 5,
-        height: 60,
-        margin: 5,
-        marginBottom: 5,
-        shadowColor: '#999',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
+    subheading: {
+        // size
+        paddingBottom: 10,
+        // style
+        fontSize: '120%',
+        fontWeight: 500
     },
-    rowFrontVisible: {
-        backgroundColor: '#FFF',
-        borderRadius: 5,
-        height: 60,
+
+    input: {
+        // format
+        alignSelf: 'center',
+        // size
+        width: '100%',
+        height: 80,
+    },
+    textInput: {
+        // size
+        width: '100%',
         padding: 10,
-        marginBottom: 15,
+        marginBottom: 3,
+        // style
+        fontSize: '100%',
+        borderBottomWidth: 2,
     },
-    rowBack: {
-        alignItems: 'center',
-        backgroundColor: '#DDD',
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingLeft: 15,
-        margin: 5,
-        marginBottom: 15,
-        borderRadius: 5,
+    button: {
+        alignSelf: 'center',
+        width: '64%',
+        padding: 10,
+        backgroundColor: "grey",
+        borderRadius: 25
     },
-    backRightBtn: {
-        alignItems: 'flex-end',
-        bottom: 0,
-        justifyContent: 'center',
-        position: 'absolute',
-        top: 0,
-        width: 75,
-        paddingRight: 17,
+    btntext: {
+        alignSelf: 'center',
+        fontSize: '140%',
+        color: 'white'
     },
-    backRightBtnLeft: {
-        backgroundColor: '#1f65ff',
-        right: 75,
+    messageSuccess: {
+        alignSelf: 'center',
+        padding: 10,
     },
-    backRightBtnRight: {
-        backgroundColor: 'red',
-        right: 0,
-        borderTopRightRadius: 5,
-        borderBottomRightRadius: 5,
-    },
-    trash: {
-        height: 25,
-        width: 25,
-        marginRight: 7,
-    },
-    title: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        color: '#666',
-    },
-    details: {
-        fontSize: 12,
-        color: '#999',
-    },
+    messageError: {
+        color: 'red'
+    }
 });

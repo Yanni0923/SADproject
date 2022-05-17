@@ -6,7 +6,11 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 const PPPScreen = ({ navigation }) => {
     const problem_length = 5;
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 9341c411d4749e604831259223db34bc0ec29659
 
     const allTeams = data.teams;
     const allGames = data.games;
@@ -27,7 +31,11 @@ const PPPScreen = ({ navigation }) => {
     const [targetFreeThrow, setTargetFreeThrow] = useState(null);
     const [isPickBH, setPickBH] = useState(null);
     const [foulPossible, setFoulPossible] = useState(null);
+<<<<<<< HEAD
     const possibleFoulList = ['2y', '2x', '3y', '3x', 'Shooting Foul']
+=======
+    const possibleFoulList = ['2y','2x','3y','3x','Shooting Foul']
+>>>>>>> 9341c411d4749e604831259223db34bc0ec29659
     var question = [allTeams, allGames[0]?.options[targetTeam], allPlayers[0][targetTeam], data.ppp_1, data.ppp_2[0][targetPlayType], data.ppp_3[0][isPickBH], data.ppp_4]
     // 只要有選項被點下去，就會執行這個
     // 選項點下去的部分寫在 renderQuestion()
@@ -36,6 +44,7 @@ const PPPScreen = ({ navigation }) => {
     // 我要把這裡改成「顯示」&「把 Team 紀錄到資料庫」
     const validateSelected = (selectedOption) => {
         console.log(selectedOption);
+<<<<<<< HEAD
         if (currentQuestionIndex == 0) { setTargetTeam(selectedOption); }
         if (currentQuestionIndex == 1) { setTargetGame(selectedOption); }
         if (currentQuestionIndex == 2) { setTargetPlayer(selectedOption); }
@@ -50,6 +59,22 @@ const PPPScreen = ({ navigation }) => {
             decideFoulPossible(selectedOption);
         }
         if (currentQuestionIndex == 6) { setTargetFreeThrow(selectedOption); }
+=======
+        if (currentQuestionIndex == 0) {setTargetTeam(selectedOption);}
+        if (currentQuestionIndex == 1) {setTargetGame(selectedOption);}
+        if (currentQuestionIndex == 2) {setTargetPlayer(selectedOption); }
+        
+        if (currentQuestionIndex == 3) {
+            setTargetPlayType(selectedOption); 
+            decideResult(selectedOption); 
+        }
+        if (currentQuestionIndex == 4) {setTargetFinish(selectedOption); }
+        if (currentQuestionIndex == 5) {
+            setTargetResult(selectedOption);
+            decideFoulPossible (selectedOption);
+        }
+        if (currentQuestionIndex == 6) {setTargetFreeThrow(selectedOption); }
+>>>>>>> 9341c411d4749e604831259223db34bc0ec29659
         // setTargetTeam(selectedOption); // 儲存選到的球隊
         setCurrentOptionSelected(selectedOption);
         // Show Next Button
@@ -57,16 +82,28 @@ const PPPScreen = ({ navigation }) => {
 
     }
     const decideResult = (selectedOption) => {
+<<<<<<< HEAD
         if (selectedOption == 'P&R BH') {
             setPickBH('P&R BH');
         } else {
+=======
+        if (selectedOption == 'P&R BH' ) {
+            setPickBH('P&R BH');
+        }else {
+>>>>>>> 9341c411d4749e604831259223db34bc0ec29659
             setPickBH('Other');
         }
     }
     const decideFoulPossible = (selectedOption) => {
+<<<<<<< HEAD
         if (possibleFoulList.indexOf(selectedOption) == -1) {
             setFoulPossible(0);
         } else {
+=======
+        if (possibleFoulList.indexOf(selectedOption) == -1 ) {
+            setFoulPossible(0);
+        }else {
+>>>>>>> 9341c411d4749e604831259223db34bc0ec29659
             setFoulPossible(1);
         }
     }
@@ -91,7 +128,7 @@ const PPPScreen = ({ navigation }) => {
         }).start();
     }
 
-
+    
     // 第一步，選球隊 (Team)
     const renderSelectTeam = () => {
         if (currentQuestionIndex < 7) {                // 第 currentQuestionIndex = 0 題是選球隊
@@ -178,7 +215,11 @@ const PPPScreen = ({ navigation }) => {
             // 已經跑完所有的題目了
             // Show Score Modal
             setShowScoreModal(true);
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 9341c411d4749e604831259223db34bc0ec29659
         } else {
             setCurrentQuestionIndex(currentQuestionIndex + 1); // 往後一題，題號 + 1 // 設定前三頁為基本資訊
             setCurrentOptionSelected(null);                    // 把點選的選項都清掉

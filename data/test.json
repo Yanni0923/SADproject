@@ -238,27 +238,31 @@
             "2x", 
             "3y",
             "3x",
-            "1p",
+            "Foul",
             "1y",
             "1x",
             "Pass Others",
             "Pass PM",
             "TO",
-            "Add"
+            "Shooting Foul"
         ],
         "Other":[
             "2y",  
             "2x", 
             "3y",
             "3x",
-            "1p",
+            "Foul",
             "Pass",
             "TO",
-            "Add"
+            "Shooting Foul"
         ]
     },
     "ppp_4": [
+        "3y",
+        "2y",
         "1y",
-        "1x"
+        "0y",
+        "no foul"
+
     ]
 }

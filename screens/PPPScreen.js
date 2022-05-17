@@ -6,7 +6,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 const PPPScreen = ({ navigation }) => {
     const problem_length = 5;
-    const allQuestions = data.data;
+    
+
     const allTeams = data.teams;
     const allGames = data.games;
     const allPlayers = data.players;
@@ -22,41 +23,55 @@ const PPPScreen = ({ navigation }) => {
     const [targetTeam, setTargetTeam] = useState(null);
     const [targetGame, setTargetGame] = useState(null);
     const [targetPlayer, setTargetPlayer] = useState(null);
-
+    const [targetPlayType, setTargetPlayType] = useState(null);
+    const [targetFinish, setTargetFinish] = useState(null);
+    const [targetResult, setTargetResult] = useState(null);
+    const [targetFreeThrow, setTargetFreeThrow] = useState(null);
+    const [isPickBH, setPickBH] = useState(null);
+    const [foulPossible, setFoulPossible] = useState(null);
+    const possibleFoulList = ['2y','2x','3y','3x','Shooting Foul']
+    var question = [allTeams, allGames[0]?.options[targetTeam], allPlayers[0][targetTeam], data.ppp_1, data.ppp_2[0][targetPlayType], data.ppp_3[0][isPickBH], data.ppp_4]
     // 只要有選項被點下去，就會執行這個
     // 選項點下去的部分寫在 renderQuestion()
     // 所以 validateAnswer 和 renderQuestion() 是綁在一起的
 
     // 我要把這裡改成「顯示」&「把 Team 紀錄到資料庫」
-    const validateSelectedTeam = (selectedOption) => {
+    const validateSelected = (selectedOption) => {
         console.log(selectedOption);
-        setTargetTeam(selectedOption); // 儲存選到的球隊
+        if (currentQuestionIndex == 0) {setTargetTeam(selectedOption);}
+        if (currentQuestionIndex == 1) {setTargetGame(selectedOption);}
+        if (currentQuestionIndex == 2) {setTargetPlayer(selectedOption); }
+        
+        if (currentQuestionIndex == 3) {
+            setTargetPlayType(selectedOption); 
+            decideResult(selectedOption); 
+        }
+        if (currentQuestionIndex == 4) {setTargetFinish(selectedOption); }
+        if (currentQuestionIndex == 5) {
+            setTargetResult(selectedOption);
+            decideFoulPossible (selectedOption);
+        }
+        if (currentQuestionIndex == 6) {setTargetFreeThrow(selectedOption); }
+        // setTargetTeam(selectedOption); // 儲存選到的球隊
         setCurrentOptionSelected(selectedOption);
         // Show Next Button
         setShowNextButton(true);
 
     }
-
-    // 我要把這裡改成「顯示」&「把 Game 紀錄到資料庫」
-    const validateSelectedGame = (selectedOption) => {
-        console.log(selectedOption);
-        setTargetGame(selectedOption); // 儲存選到的球隊
-        setCurrentOptionSelected(selectedOption);
-        // Show Next Button
-        setShowNextButton(true);
-
+    const decideResult = (selectedOption) => {
+        if (selectedOption == 'P&R BH' ) {
+            setPickBH('P&R BH');
+        }else {
+            setPickBH('Other');
+        }
     }
-
-    // 我要把這裡改成「顯示」&「把 Player 紀錄到資料庫」
-    const validateSelectedPlayer = (selectedOption) => {
-        console.log(selectedOption);
-        setTargetPlayer(selectedOption); // 儲存選到的球隊
-        setCurrentOptionSelected(selectedOption);
-        // Show Next Button
-        setShowNextButton(true);
-
+    const decideFoulPossible = (selectedOption) => {
+        if (possibleFoulList.indexOf(selectedOption) == -1 ) {
+            setFoulPossible(0);
+        }else {
+            setFoulPossible(1);
+        }
     }
-
 
 
 
@@ -80,18 +95,18 @@ const PPPScreen = ({ navigation }) => {
         }).start();
     }
 
-
+    
     // 第一步，選球隊 (Team)
     const renderSelectTeam = () => {
-        if (currentQuestionIndex < 5) {                // 第 currentQuestionIndex = 0 題是選球隊
+        if (currentQuestionIndex < 7) {                // 第 currentQuestionIndex = 0 題是選球隊
             return (
-                <View>
+                <ScrollView>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'flex-end'
                     }}>
                         <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length} </Text>
+                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {question.length} </Text>
                         <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
                     </View>
 
@@ -102,170 +117,9 @@ const PPPScreen = ({ navigation }) => {
                     }}>{allTeams[0]?.question}</Text>
                     <View>
                         {
-                            allTeams.map(option => (
+                            question[currentQuestionIndex].map(option => (
                                 <TouchableOpacity
-                                    onPress={() => validateSelectedTeam(option)}
-                                    key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-                                    {
-                                        option == currentOptionSelected ? (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.success,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="check" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.white,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        )
-                                    }
-
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                </View>
-            )
-        }
-    }
-
-    // 第二步，選球賽 (Game)
-    const renderSelectGame = () => {
-        if (currentQuestionIndex == 1) {            // 第 currentQuestionIndex = 1 題是選球賽
-            return (
-                <View>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length} </Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allTeams[0]?.question}</Text>
-                    <View>
-                        {
-                            allGames[0]?.options[targetTeam].map(option => (
-                                <TouchableOpacity
-                                    onPress={() => validateSelectedGame(option)}
-                                    key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-                                    {
-                                        option == currentOptionSelected ? (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.success,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="check" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.white,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        )
-                                    }
-
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                </View>
-            )
-        } else {
-            return null
-        }
-
-    }
-
-    // 第三步，選球員 (Player)
-    const renderSelectPlayer = () => {
-        if (currentQuestionIndex == 2
-            
-            ) {            // 第 currentQuestionIndex = 2 題是選球員
-            return (
-                <ScrollView style={{ height: '60%' }}>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length} </Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allTeams[0]?.question}</Text>
-                    <View>
-                        {
-                            allPlayers[0][targetTeam].map(option => (
-                                <TouchableOpacity
-                                    onPress={() => validateSelectedPlayer(option)}
+                                    onPress={() => validateSelected(option)}
                                     key={option}
                                     style={{
                                         borderWidth: 3,
@@ -317,100 +171,18 @@ const PPPScreen = ({ navigation }) => {
                     </View>
                 </ScrollView>
             )
-        } else {
-            return null
         }
     }
-    // 第三步，選type (Play type)
-    const renderSelectType = () => {
-        if (currentQuestionIndex == 3
-            
-            ) {            // 第 currentQuestionIndex = 2 題是選球員
-            return (
 
-                <ScrollView style={{ height: '60%' }}>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length} </Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allTeams[0]?.question}</Text>
-                    <View>
-                        {
-                            data.ppp_1.map(option => (
-                                <TouchableOpacity
-                                    onPress={() => validateSelectedPlayer(option)}
-                                    key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-                                    {
-                                        option == currentOptionSelected ? (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.success,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="check" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.white,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        )
-                                    }
-
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                </ScrollView>
-            )
-        } else {
-            return null
-        }
-    }
     // 只要答案公布了(執行完 validateAnswer)，就會執行這個
     // 選項點下去的部分寫在 renderNextButton()
     // 所以 handleNext 和 renderNextButton() 是綁在一起的
     const handleNext = () => {
-        if (currentQuestionIndex == 6) {
+        if (currentQuestionIndex == 6 || foulPossible == 0) {
             // 已經跑完所有的題目了
             // Show Score Modal
             setShowScoreModal(true);
+            
         } else {
             setCurrentQuestionIndex(currentQuestionIndex + 1); // 往後一題，題號 + 1 // 設定前三頁為基本資訊
             setCurrentOptionSelected(null);                    // 把點選的選項都清掉
@@ -425,107 +197,6 @@ const PPPScreen = ({ navigation }) => {
             useNativeDriver: false
         }).start();
 
-    }
-
-    const renderQuestion = () => {
-        if (currentQuestionIndex > 2) {
-            return (
-                <View style={{
-                    marginVertical: 40
-                }}>
-                    {/* Question Counter */}
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length}</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allQuestions[currentQuestionIndex - 3]?.question}</Text>
-                </View>
-            )
-        }
-    }
-
-    const renderOptions = () => {
-        if (currentQuestionIndex > 2) {
-            return (
-                <View>
-                    {
-                        allQuestions[currentQuestionIndex - 3]?.options.map(option => (
-                            <TouchableOpacity
-                                onPress={() => validateSelectedTeam(option)}
-                                key={option}
-                                style={{
-                                    borderWidth: 3,
-                                    borderColor: option == correctOption //把正確與錯誤答案框起來
-                                        ? COLORS.success
-                                        : option == currentOptionSelected
-                                            ? COLORS.error
-                                            : COLORS.secondary + "40",
-                                    backgroundColor: option == correctOption //把正確與錯誤答案的背景顏色改掉
-                                        ? COLORS.success + "20"
-                                        : option == currentOptionSelected
-                                            ? COLORS.error + "20"
-                                            : COLORS.secondary + "20",
-                                    height: 60, borderRadius: 20,
-                                    flexDirection: 'row',
-                                    alignItems: 'center', justifyContent: 'space-between',
-                                    paddingHorizontal: 20,
-                                    marginVertical: 10
-                                }}
-                            >
-                                <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                {/* Show Check Or Cross Icon based on correct answer*/}
-                                {
-                                    option == correctOption ? (
-                                        <View style={{
-                                            width: 30, height: 30, borderRadius: 30 / 2,
-                                            backgroundColor: COLORS.success,
-                                            justifyContent: 'center', alignItems: 'center'
-                                        }}>
-                                            <MaterialCommunityIcons name="check" style={{
-                                                color: COLORS.white,
-                                                fontSize: 20
-                                            }} />
-                                        </View>
-                                    ) : option == currentOptionSelected ? (
-                                        <View style={{
-                                            width: 30, height: 30, borderRadius: 30 / 2,
-                                            backgroundColor: COLORS.error,
-                                            justifyContent: 'center', alignItems: 'center'
-                                        }}>
-                                            <MaterialCommunityIcons name="close" style={{
-                                                color: COLORS.white,
-                                                fontSize: 20
-                                            }} />
-                                        </View>
-                                    ) : (
-                                        <View style={{
-                                            width: 30, height: 30, borderRadius: 30 / 2,
-                                            backgroundColor: COLORS.white,
-                                            justifyContent: 'center', alignItems: 'center'
-                                        }}>
-                                            <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                color: COLORS.white,
-                                                fontSize: 20
-                                            }} />
-                                        </View>
-                                    )
-                                }
-
-                            </TouchableOpacity>
-                        ))
-                    }
-                </View>
-            )
-        }
     }
 
     const renderNextButton = () => {
@@ -548,7 +219,7 @@ const PPPScreen = ({ navigation }) => {
     // 紀錄進行到第幾題的動態 ProgressBar
     const [progress, setProgress] = useState(new Animated.Value(0));
     const progressAnim = progress.interpolate({
-        inputRange: [0, allQuestions.length],
+        inputRange: [0, question.length],
         outputRange: ['0%', '100%']
     })
 
@@ -589,15 +260,8 @@ const PPPScreen = ({ navigation }) => {
 
                 {/* ProgressBar */}
                 {renderProgressBar()}
-
-                {/* Select Team-Game-Player */}
                 {renderSelectTeam()}
-                {renderSelectGame()}
-                {renderSelectPlayer()}
 
-
-
-                {/* Next Button */}
                 {renderNextButton()}
 
                 {/* Score Modal */}
@@ -622,7 +286,7 @@ const PPPScreen = ({ navigation }) => {
                             <Text style={{
                                 fontSize: 30,
                                 fontWeight: 'bold'
-                            }}>{score > (allQuestions.length / 2) ? 'Congratulation!' : 'Oops!'}</Text>
+                            }}>{score > (question.length / 2) ? 'Congratulation!' : 'Oops!'}</Text>
 
                             <View style={{
                                 flexDirection: 'row',
@@ -632,12 +296,12 @@ const PPPScreen = ({ navigation }) => {
                             }}>
                                 <Text style={{
                                     fontSize: 30,
-                                    color: score > (allQuestions.length / 2) ? COLORS.success : COLORS.error
+                                    color: score > (question.length / 2) ? COLORS.success : COLORS.error
                                 }}>{score}</Text>
                                 <Text style={{
                                     fontSize: 30,
                                     color: COLORS.black
-                                }}>/ {allQuestions.length}</Text>
+                                }}>/ {question.length}</Text>
                             </View>
 
                             <TouchableOpacity

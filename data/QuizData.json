@@ -231,39 +231,38 @@
         ]
     }
 ],
-    "ppp_3": [
-        {
-            "Transition": [
-                {
-                    "Set shot": [
-                        "2x",
-                        "2y"
-                    ]
-                },
-                
-                {
-                    "Drive right": [
-                        "2x",
-                        "2y"
-                    ]
-                }
-            ],
-            "Catch & Shoot": [
-                {
-                    "Set shot": [
-                        "2x",
-                        "2y"
-                    ]
-                },
-                {
-                    "Drive right": [
-                        "2x",
-                        "2y"
-                    ]
-                }
-            ]
-        }
-    ],
+"ppp_3": [
+    {
+        "P&R BH":[
+            "2y",  
+            "2x", 
+            "3y",
+            "3x",
+            "Common Foul",
+            "Pass Others",
+            "Pass PM",
+            "TO",
+            "Shooting Foul"
+        ],
+        "Other":[
+            "2y",  
+            "2x", 
+            "3y",
+            "3x",
+            "Common Foul",
+            "Pass",
+            "TO",
+            "Shooting Foul"
+        ]
+    }
+],
+"ppp_4": [
+    "3y",
+    "2y",
+    "1y",
+    "0y",
+    "no foul"
+],
     "data": [
         {
             "question": "What’s the biggest planet in our solar system?",

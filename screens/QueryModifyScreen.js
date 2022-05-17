@@ -475,7 +475,7 @@ const QueryModifyScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.sliderContainer}>
+            {/* <View style={styles.sliderContainer}>
                 <Swiper
                     autoplay={true}
                     horizontal={false}
@@ -496,7 +496,7 @@ const QueryModifyScreen = ({ navigation }) => {
                         />
                     </View>
                 </Swiper>
-            </View>
+            </View> */}
             <View style={styles.cardsWrapper}>
                 <SearchBar
                     round

@@ -5,7 +5,7 @@ import * as data from '../data/QuizData.json';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const PPPScreen = ({ navigation }) => {
-    const problem_length = 5;
+
     const allQuestions = data.data;
     const allTeams = data.teams;
     const allGames = data.games;
@@ -26,6 +26,21 @@ const PPPScreen = ({ navigation }) => {
     // 只要有選項被點下去，就會執行這個
     // 選項點下去的部分寫在 renderQuestion()
     // 所以 validateAnswer 和 renderQuestion() 是綁在一起的
+    const validateAnswer = (selectedOption) => {
+        let correct_option = allQuestions[currentQuestionIndex]['correct_option'];
+        setCurrentOptionSelected(selectedOption);
+        setCorrectOption(correct_option);
+        setIsOptionDisabled(true);
+        if (selectedOption == correct_option) {
+            // Set Score
+            setScore(score + 1);
+        }
+
+        // Show Next Button
+        setShowNextButton(true);
+
+    }
+
 
     // 我要把這裡改成「顯示」&「把 Team 紀錄到資料庫」
     const validateSelectedTeam = (selectedOption) => {
@@ -83,7 +98,7 @@ const PPPScreen = ({ navigation }) => {
 
     // 第一步，選球隊 (Team)
     const renderSelectTeam = () => {
-        if (currentQuestionIndex < 5) {                // 第 currentQuestionIndex = 0 題是選球隊
+        if (currentQuestionIndex == 0) {                // 第 currentQuestionIndex = 0 題是選球隊
             return (
                 <View>
                     <View style={{
@@ -242,11 +257,9 @@ const PPPScreen = ({ navigation }) => {
 
     // 第三步，選球員 (Player)
     const renderSelectPlayer = () => {
-        if (currentQuestionIndex == 2
-            
-            ) {            // 第 currentQuestionIndex = 2 題是選球員
+        if (currentQuestionIndex == 2) {            // 第 currentQuestionIndex = 2 題是選球員
             return (
-                <ScrollView style={{ height: '60%' }}>
+                <ScrollView>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'flex-end'
@@ -321,93 +334,12 @@ const PPPScreen = ({ navigation }) => {
             return null
         }
     }
-    // 第三步，選type (Play type)
-    const renderSelectType = () => {
-        if (currentQuestionIndex == 3
-            
-            ) {            // 第 currentQuestionIndex = 2 題是選球員
-            return (
 
-                <ScrollView style={{ height: '60%' }}>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length} </Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allTeams[0]?.question}</Text>
-                    <View>
-                        {
-                            data.ppp_1.map(option => (
-                                <TouchableOpacity
-                                    onPress={() => validateSelectedPlayer(option)}
-                                    key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-                                    {
-                                        option == currentOptionSelected ? (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.success,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="check" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.white,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        )
-                                    }
-
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                </ScrollView>
-            )
-        } else {
-            return null
-        }
-    }
     // 只要答案公布了(執行完 validateAnswer)，就會執行這個
     // 選項點下去的部分寫在 renderNextButton()
     // 所以 handleNext 和 renderNextButton() 是綁在一起的
     const handleNext = () => {
-        if (currentQuestionIndex == 6) {
+        if (currentQuestionIndex == allQuestions.length - 1 + 3) {
             // 已經跑完所有的題目了
             // Show Score Modal
             setShowScoreModal(true);
@@ -534,7 +466,7 @@ const PPPScreen = ({ navigation }) => {
                 <TouchableOpacity
                     onPress={handleNext}
                     style={{
-                        marginBottom: 100, marginTop: 20, width: '100%', backgroundColor: COLORS.accent, padding: 20, borderRadius: 5
+                        marginTop: 20, width: '100%', backgroundColor: COLORS.accent, padding: 20, borderRadius: 5
                     }}
                 >
                     <Text style={{ fontSize: 20, color: COLORS.white, textAlign: 'center' }}>Next</Text>
@@ -595,7 +527,11 @@ const PPPScreen = ({ navigation }) => {
                 {renderSelectGame()}
                 {renderSelectPlayer()}
 
+                {/* Question */}
+                {renderQuestion()}
 
+                {/* Options */}
+                {renderOptions()}
 
                 {/* Next Button */}
                 {renderNextButton()}

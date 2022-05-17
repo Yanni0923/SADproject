@@ -17,7 +17,7 @@ import RNPickerSelect from 'react-native-picker-select';
 
 // import { TouchableOpacity} from 'react-native-gesture-handler'
 
-const PPPScreen = ({ navigation }) => {
+const StatAnalysisScreen = ({ navigation }) => {
     const { colors } = useTheme();
     const theme = useTheme;
 
@@ -463,7 +463,7 @@ const PPPScreen = ({ navigation }) => {
 
 }
 
-export default PPPScreen;
+export default StatAnalysisScreen;
 
 const styles = StyleSheet.create({
 

@@ -1,26 +1,25 @@
 {
     "games": [
-
-            {
-                "options": {
-                    "台灣大學": [
-                        "台灣大學 vs 台藝大",
-                        "台大 vs 台科大"
-                    ],
-                    "台藝大": [
-                        "台藝大 vs 台師大",
-                        "台藝大 vs 台科大"
-                    ],
-                    "台師大": [
-                        "台師大 vs 台藝大",
-                        "台師大 vs 台灣大學"
-                    ],
-                    "台科大": [
-                        "台藝大 vs 台灣大學"
-                    ]
-                }
+        {
+            "options": {
+                "台灣大學": [
+                    "台灣大學 vs 台藝大",
+                    "台大 vs 台科大"
+                ],
+                "台藝大": [
+                    "台藝大 vs 台師大",
+                    "台藝大 vs 台科大"
+                ],
+                "台師大": [
+                    "台師大 vs 台藝大",
+                    "台師大 vs 台灣大學"
+                ],
+                "台科大": [
+                    "台藝大 vs 台灣大學"
+                ]
             }
-        ],
+        }
+    ],
     "teams": [
         "台灣大學",
         "僑光科大"
@@ -72,7 +71,6 @@
             ]
         }
     ],
-    
     "ppp_1": [
         "Transition",
         "Catch & Shoot",
@@ -88,7 +86,6 @@
         "P&R Men",
         "Hand Off",
         "Others"
-
     ],
     "ppp_2": [
         {
@@ -103,7 +100,6 @@
                 "Right shoulder",
                 "Left shoulder",
                 "Others"
-
             ],
             "Catch & Shoot": [
                 "Shot",
@@ -130,9 +126,7 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                
                 "Others"
-
             ],
             "Iso": [
                 "Set shot",
@@ -143,7 +137,6 @@
                 "Pull-up left",
                 "Pull-up others",
                 "Others"
-
             ],
             "Put Back": [
                 "Set shot",
@@ -154,7 +147,6 @@
                 "Pull-up left",
                 "Pull-up others",
                 "Others"
-
             ],
             "Right Post (D)": [
                 "Right shoulder",
@@ -162,8 +154,6 @@
                 "Face up",
                 "Post pin",
                 "Others"
-
-
             ],
             "Left Post (D)": [
                 "Right shoulder",
@@ -171,7 +161,6 @@
                 "Face up",
                 "Post pin",
                 "Others"
-
             ],
             "Off screen": [
                 "Set shot",
@@ -182,7 +171,6 @@
                 "Pull-up left",
                 "Pull-up others",
                 "Others"
-
             ],
             "Cut": [
                 "Set shot",
@@ -193,9 +181,8 @@
                 "Pull-up left",
                 "Pull-up others",
                 "Others"
-
             ],
-            "P&R Men":[
+            "P&R Men": [
                 "Set shot",
                 "Drive right",
                 "Drive left",
@@ -204,7 +191,6 @@
                 "Pull-up left",
                 "Pull-up others",
                 "Others"
-
             ],
             "Hand Off": [
                 "Set shot",
@@ -215,7 +201,6 @@
                 "Pull-up left",
                 "Pull-up others",
                 "Others"
-
             ],
             "Others": [
                 "Set shot",
@@ -227,15 +212,13 @@
                 "Pull-up others",
                 "Turnover",
                 "Others"
-
             ],
-
         }
     ],
     "ppp_3": {
-        "P&R BH":[
-            "2y",  
-            "2x", 
+        "P&R BH": [
+            "2y",
+            "2x",
             "3y",
             "3x",
             "Foul",
@@ -246,9 +229,9 @@
             "TO",
             "Shooting Foul"
         ],
-        "Other":[
-            "2y",  
-            "2x", 
+        "Other": [
+            "2y",
+            "2x",
             "3y",
             "3x",
             "Foul",
@@ -263,6 +246,5 @@
         "1y",
         "0y",
         "no foul"
-
     ]
 }

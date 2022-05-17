@@ -22,4 +22,13 @@ cd server
 # 用另一個 terminal 啟動 app.js 檔案，開著別關，關了資料庫就連線中斷了。
 node app.js 
 ```
-port 7000 起成功的話 terminal 會顯示 `RUN http://localhost:7000`
+port 7000 起成功的話 terminal 會顯示 `RUN http://localhost:7000`  
+
+---
+出現任何問題都自己`yarn add`解決看看，  
+資料庫的`app.js`和`登入註冊`的部分，我有至少使用了：  
+* yarn add express
+* yarn add mysql
+* yarn add axios
+* yarn add cors
+可以先裝一裝。

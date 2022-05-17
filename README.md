@@ -22,4 +22,4 @@ cd server
 # 用另一個 terminal 啟動 app.js 檔案，開著別關，關了資料庫就連線中斷了。
 node app.js 
 ```
-
+port 7000 起成功的話 terminal 會顯示 `RUN http://localhost:7000`

@@ -16,6 +16,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 
+import axios from 'axios';
+
 const SignUpScreen = ({ navigation }) => {
 
     const [data, setData] = React.useState({
@@ -69,6 +71,39 @@ const SignUpScreen = ({ navigation }) => {
             ...data,
             confirm_secureTextEntry: !data.confirm_secureTextEntry
         });
+    }
+
+    const signupHandle = (username, password, confirm_password) => {
+        if (username !== "" && password !== "" && confirm_password !== "") {
+            axios
+                .post("http://localhost:7000/signup", {
+                    username,
+                    password,
+                    confirm_password
+                })
+                .then((res) => {
+                    // navigate("/signin");
+
+                    if (res.data['message'] == 'REGISTER_SUCCESSFULLY') {
+                        alert("註冊成功!", username);
+                        // navigate("/home");
+                    }
+                    else if (res.data['message'] == 'ACCOUNT_ALREADY_EXISTS') {
+                        alert("帳密已存在!");
+                    }
+                })
+                .catch((e) => {
+                    if (e.response.error) {
+                        alert("註冊失敗！此帳號已存在，請嘗試新的帳號！");
+                    }
+                });
+        } else if (username === "") {
+            alert("請輸入帳號!");
+        } else if (password === "") {
+            alert("請輸入密碼!");
+        } else if (password !== confirm_password) {
+            alert("兩次密碼輸入不一致!");
+        }
     }
 
     return (
@@ -188,7 +223,7 @@ const SignUpScreen = ({ navigation }) => {
                     <View style={styles.button}>
                         <TouchableOpacity
                             style={styles.signIn}
-                            onPress={() => { }} // 要放東西 寫到資料庫和確定沒重複
+                            onPress={() => { signupHandle(data.username, data.password, data.confirm_password) }} // 要放東西 寫到資料庫和確定沒重複
                         >
                             <LinearGradient
                                 colors={['#08d4c4', '#01ab9d']}

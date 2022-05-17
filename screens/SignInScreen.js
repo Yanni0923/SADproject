@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SIZES } from "../constants";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
+import axios from 'axios';
 
 import { useTheme } from 'react-native-paper';
 
@@ -24,8 +25,11 @@ import { AuthContext } from '../components/context';
 import * as users from '../model/users.json';
 
 const SignInScreen = ({ navigation }) => {
-
-
+    /* 串接資料庫 */
+    // const express = require('express');
+    const db = require('../server/config/db');
+    // const app = express();
+    // 
 
     const Users = users.Users;
     const [data, setData] = React.useState({
@@ -100,11 +104,48 @@ const SignInScreen = ({ navigation }) => {
 
 
     // 點擊登入頁面的送出
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+
+    const login = (username, password) => {
+        if (username !== "" && password !== "") {
+            axios
+                .post("http://localhost:7000/signin", {
+                    username: username,
+                    password: password,
+                })
+                .then((res) => {
+                    if (res.data['message'] == 'LOGIN_SUCCESSFULLY') {
+                        alert("登入成功!");
+                        // navigate("/home");
+                    }
+                    else if (res.data['message'] == 'ACCOUNT_NOT_EXIST') {
+                        alert("帳號或密碼錯誤!");
+                    }
+                })
+                .catch((e) => {
+                    if (e.response.error) {
+                        alert("port 7000：伺服器連線錯誤！");
+                    }
+                });
+        } else if (username === "") {
+            alert("請輸入帳號!");
+        } else {
+            alert("請輸入密碼!");
+        }
+    };
     const loginHandle = (userName, password) => {
 
         // signIn = React.useContext(AuthContext);
         console.log(userName);
         console.log(password);
+
+        // db.query('select * from account', function (err, rows) {
+        //     if (err) throw err;
+        //     console.log('Response: ', rows);
+        // });
+
+
         const foundUser = Users.filter(item => {
             return userName == item.username && password == item.password;
         });
@@ -236,7 +277,7 @@ const SignInScreen = ({ navigation }) => {
                 <View style={styles.button}>
                     <TouchableOpacity
                         style={styles.signIn}
-                        onPress={() => { loginHandle(data.username, data.password) }}
+                        onPress={() => { login(data.username, data.password) }}
                     >
                         <LinearGradient
                             colors={['#08d4c4', '#01ab9d']}

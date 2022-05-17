@@ -500,15 +500,16 @@ const QueryModifyScreen = ({ navigation }) => {
             <View style={styles.cardsWrapper}>
                 <SearchBar
                     round
-                    searchIcon={{ size: 50 }}
+                    searchIcon={{ size: 30 }}
                     onChangeText={(text) => searchFilterFunction(text)}
                     onClear={(text) => searchFilterFunction('')}
-                    placeholder="    Type Here..."
+                    placeholder="Type Here..."
                     value={search}
                     lightTheme={true}
-                    containerStyle={{ backgroundColor: '#FFCCCC', borderWidth: 1, borderRadius: 30 }}
-                    inputStyle={{ backgroundColor: 'white', borderRadius: 30 }}
-                    placeholderTextColor={'black'}
+                    containerStyle={{ backgroundColor: '#ffffff', padding: 15, borderRadius: 30 }}
+                    inputContainerStyle={{ backgroundColor: 'white' }}
+                    inputStyle={{ backgroundColor: '#FFF8D7', textAlign: 'center' }}
+                    placeholderTextColor={'gray'}
                 />
             </View>
             <View style={styles.categoryContainer}>
@@ -733,6 +734,9 @@ const styles = StyleSheet.create({
         marginBottom: 50,
         width: '90%',
         alignSelf: 'center',
+    },
+    searchBar: {
+
     },
     card: {
         height: "100%",

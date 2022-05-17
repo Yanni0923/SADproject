@@ -13,8 +13,6 @@ const PPPScreen = ({ navigation }) => {
     const allPlayers = data.players;
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentOptionSelected, setCurrentOptionSelected] = useState(null);
-    const [correctOption, setCorrectOption] = useState(null);
-    const [isOptionDisabled, setIsOptionDisabled] = useState(false);
     const [score, setScore] = useState(0);
     const [showNextButton, setShowNextButton] = useState(false);
     const [showScoreModal, setShowScoreModal] = useState(false);
@@ -82,10 +80,8 @@ const PPPScreen = ({ navigation }) => {
 
         setCurrentQuestionIndex(0);                        // 重置題號
         setScore(0);                                       // 重置分數
-
+        setFoulPossible(1);
         setCurrentOptionSelected(null);                    // 把點選的選項都清掉
-        setCorrectOption(null);                            // 把上一題的正確答案清掉
-        setIsOptionDisabled(false);                        // 把選項都開放可以點選
         setShowNextButton(false);                          // 把 Next Button 關起來
 
         Animated.timing(progress, {                        // 把進度條歸 0
@@ -186,8 +182,6 @@ const PPPScreen = ({ navigation }) => {
         } else {
             setCurrentQuestionIndex(currentQuestionIndex + 1); // 往後一題，題號 + 1 // 設定前三頁為基本資訊
             setCurrentOptionSelected(null);                    // 把點選的選項都清掉
-            setCorrectOption(null);                            // 把上一題的正確答案清掉
-            setIsOptionDisabled(false);                        // 把選項都開放可以點選
             setShowNextButton(false);                          // 把 Next Button 關起來
         }
 

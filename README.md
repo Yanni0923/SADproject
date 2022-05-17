@@ -30,5 +30,5 @@ port 7000 起成功的話 terminal 會顯示 `RUN http://localhost:7000`
 * yarn add express
 * yarn add mysql
 * yarn add axios
-* yarn add cors
+* yarn add cors  
 可以先裝一裝。

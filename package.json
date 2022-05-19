@@ -10,7 +10,11 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@emotion/react": "^11.9.0",
+    "@emotion/styled": "^11.8.1",
+    "@expo/webpack-config": "~0.16.2",
     "@material/button": "^13.0.0",
+    "@mui/system": "^5.8.0",
     "@react-native-community/async-storage": "^1.12.1",
     "@react-navigation/bottom-tabs": "^6.3.1",
     "@react-navigation/drawer": "^6.4.1",
@@ -19,7 +23,7 @@
     "@react-navigation/stack": "^6.2.1",
     "axios": "^0.27.2",
     "cors": "^2.8.5",
-    "expo": "~44.0.0",
+    "expo": "^45.0.4",
     "expo-linear-gradient": "^11.3.0",
     "expo-status-bar": "~1.2.0",
     "expres": "^0.0.5",
@@ -44,10 +48,14 @@
     "react-native-swiper": "^1.6.0",
     "react-native-vector-icons": "^9.1.0",
     "react-native-web": "0.17.1",
-    "styled-components": "^5.3.5"
+    "styled-components": "^5.3.5",
+    "webpack-dev-server": "~3.11.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9"
+    "@babel/core": "^7.17.12",
+    "@babel/preset-env": "^7.17.12",
+    "babel-loader": "^8.2.5",
+    "webpack": "^4.43.0"
   },
   "private": true
 }

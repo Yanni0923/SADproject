@@ -90,15 +90,15 @@
     "ppp_2": [
         {
             "Transition": [
-                "Set shot",
                 "Drive right",
                 "Drive left",
                 "Drive others",
+                "Right shoulder",
+                "Left shoulder",
+                "Set shot",
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Right shoulder",
-                "Left shoulder",
                 "Others"
             ],
             "Catch & Shoot": [

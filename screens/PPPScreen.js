@@ -27,7 +27,9 @@ const PPPScreen = ({ navigation }) => {
     const [isPickBH, setPickBH] = useState(null);
     const [foulPossible, setFoulPossible] = useState(null);
     const possibleFoulList = ['2y', '2x', '3y', '3x', 'Shooting Foul']
-    var question = [allTeams, allGames[0]?.options[targetTeam], allPlayers[0][targetTeam], data.ppp_1, data.ppp_2[0][targetPlayType], data.ppp_3[0][isPickBH], data.ppp_4]
+    var question = [allTeams, allTeams, allPlayers[0][targetTeam], data.ppp_1, data.ppp_2[0][targetPlayType], data.ppp_3[0][isPickBH], data.ppp_4]
+    var target = [targetTeam, targetGame, targetPlayer, targetPlayType, targetFinish, targetResult, targetFreeThrow]
+    const question_name = ['隊伍', '敵方隊伍', '球員', 'Play Type', 'Finish', 'Result', 'Free Throw']
     // 只要有選項被點下去，就會執行這個
     // 選項點下去的部分寫在 renderQuestion()
     // 所以 validateAnswer 和 renderQuestion() 是綁在一起的
@@ -74,22 +76,20 @@ const PPPScreen = ({ navigation }) => {
 
 
     // 重新開始下一次測驗
-    const restartQuiz = () => {
+    const addGame = () => {
         setShowScoreModal(false);                          // 把 ScoreModal 那個彈出來的東西關掉
-
         setCurrentQuestionIndex(0);                        // 重置題號
-        setScore(0);                                       // 重置分數
         setFoulPossible(1);
         setCurrentOptionSelected(null);                    // 把點選的選項都清掉
         setShowNextButton(false);                          // 把 Next Button 關起來
-
-        Animated.timing(progress, {                        // 把進度條歸 0
-            toValue: 0,
-            duration: 1000,
-            useNativeDriver: false
-        }).start();
     }
-
+    const addPlay = () => {
+        setShowScoreModal(false);                          // 把 ScoreModal 那個彈出來的東西關掉
+        setCurrentQuestionIndex(2);                        // 重置題號
+        setFoulPossible(1);
+        setCurrentOptionSelected(null);                    // 把點選的選項都清掉
+        setShowNextButton(false);                          // 把 Next Button 關起來
+    }
 
     // 第一步，選球隊 (Team)
     const renderSelectTeam = () => {
@@ -97,25 +97,24 @@ const PPPScreen = ({ navigation }) => {
             return (
                 <ScrollView>
                     <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
+                    flexDirection: 'row',
+                    alignItems: 'flex-end',
+                    alignSelf : 'center'
                     }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {question.length} </Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
-                    </View>
+                    <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>{question_name[currentQuestionIndex]} </Text>
 
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allTeams[0]?.question}</Text>
-                    <View>
+                    </View>
+                    <View style={{
+                        flexDirection: 'row',
+                        // alignItems: 'flex-end',
+                        alignSelf : 'center'
+                    }}>
+                        <View >
                         {
-                            question[currentQuestionIndex].map(option => (
+                        question[currentQuestionIndex].slice(0,Math.ceil(question[currentQuestionIndex].length/2)).map(option => (
                                 <TouchableOpacity
-                                    onPress={() => validateSelected(option)}
-                                    key={option}
+                                onPress={() => validateSelected(option)}
+                                key={option}
                                     style={{
                                         borderWidth: 3,
                                         borderColor: option == currentOptionSelected
@@ -124,47 +123,60 @@ const PPPScreen = ({ navigation }) => {
                                         backgroundColor: option == currentOptionSelected
                                             ? COLORS.success + "20"
                                             : COLORS.secondary + "20",
+                                        width: 180,
                                         height: 60, borderRadius: 20,
                                         flexDirection: 'row',
                                         alignItems: 'center', justifyContent: 'space-between',
                                         paddingHorizontal: 20,
-                                        marginVertical: 10
+                                        marginVertical: 10,
+                                        marginHorizontal: 10,
                                     }}
                                 >
                                     <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
+        
                                     {/* Show Check Or Cross Icon based on correct answer*/}
-                                    {
-                                        option == currentOptionSelected ? (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.success,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="check" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.white,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        )
-                                    }
-
+        
                                 </TouchableOpacity>
                             ))
                         }
+        
+        
+        
+                        </View>
+                        <View >
+                        {
+                        question[currentQuestionIndex].slice(Math.ceil(question[currentQuestionIndex].length/2), question[currentQuestionIndex].length).map(option => (
+                                <TouchableOpacity
+                                onPress={() => validateSelected(option)}
+                                key={option}
+                                    style={{
+                                        borderWidth: 3,
+                                        borderColor: option == currentOptionSelected
+                                            ? COLORS.success
+                                            : COLORS.secondary + "40",
+                                        backgroundColor: option == currentOptionSelected
+                                            ? COLORS.success + "20"
+                                            : COLORS.secondary + "20",
+                                        width: 180,
+                                        height: 60, borderRadius: 20,
+                                        flexDirection: 'row',
+                                        alignItems: 'center', justifyContent: 'space-between',
+                                        paddingHorizontal: 20,
+                                        marginVertical: 10,
+                                        marginHorizontal: 10,
+                                    }}
+                                >
+                                    <Text style={{ fontSize: 20, color: COLORS.white, alignSelf : 'center'}}>{option}</Text>
+        
+                                    {/* Show Check Or Cross Icon based on correct answer*/}
+        
+                                </TouchableOpacity>
+                            ))
+                        }
+                        </View>
                     </View>
                 </ScrollView>
+
             )
         }
     }
@@ -218,20 +230,37 @@ const PPPScreen = ({ navigation }) => {
     const renderProgressBar = () => {
         return (
             <View style={{
-                width: '100%',
-                height: 20,
-                borderRadius: 20,
-                backgroundColor: '#00000020'
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                alignSelf : 'center'
             }}>
-                <Animated.View style={[{
-                    height: 20,
-                    borderRadius: 20,
-                    backgroundColor: COLORS.accent
-                }, {
-                    width: progressAnim
-                }]}>
+                {
+                target.slice(0,currentQuestionIndex ).map((option, index) => (
+                        <TouchableOpacity
+                            onPress={() => setCurrentQuestionIndex(index)}
+                            key={option}
+                            style={{
+                                borderWidth: 3,
+                                borderColor: COLORS.button,
+                                backgroundColor: COLORS.button + "20",
+                                height: 50, borderRadius: 20,
+                                flexDirection: 'row',
+                                alignItems: 'center', justifyContent: 'space-between',
+                                paddingHorizontal: 10,
+                                marginHorizontal: 5,
+                                marginVertical: 10
+                            }}
+                        >
+                            <Text style={{ fontSize: 10, color: COLORS.white }}>{option}</Text>
 
-                </Animated.View>
+                            {/* Show Check Or Cross Icon based on correct answer*/}
+
+                        </TouchableOpacity>
+                    ))
+                }
+
+
+
 
             </View>
         )
@@ -275,37 +304,64 @@ const PPPScreen = ({ navigation }) => {
                             padding: 20,
                             alignItems: 'center'
                         }}>
-                            <Text style={{
-                                fontSize: 30,
-                                fontWeight: 'bold'
-                            }}>{score > (question.length / 2) ? 'Congratulation!' : 'Oops!'}</Text>
-
                             <View style={{
                                 flexDirection: 'row',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                marginVertical: 20
+                                alignItems: 'flex-end',
+                                alignSelf : 'center'
                             }}>
-                                <Text style={{
-                                    fontSize: 30,
-                                    color: score > (question.length / 2) ? COLORS.success : COLORS.error
-                                }}>{score}</Text>
-                                <Text style={{
-                                    fontSize: 30,
-                                    color: COLORS.black
-                                }}>/ {question.length}</Text>
+                                {
+                                target.map((option, index) => (
+                                        <TouchableOpacity
+                                            onPress={() => setCurrentQuestionIndex(index)}
+                                            key={option}
+                                            style={{
+                                                borderWidth: 3,
+                                                borderColor: COLORS.result + "20",
+                                                backgroundColor: COLORS.result,
+                                                height: 60, borderRadius: 20,
+                                                flexDirection: 'row',
+                                                alignItems: 'center', justifyContent: 'space-between',
+                                                paddingHorizontal: 20,
+                                                marginHorizontal: 10,
+                                                marginVertical: 10
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 20, color: COLORS.black }}>{option}</Text>
+
+                                            {/* Show Check Or Cross Icon based on correct answer*/}
+
+                                        </TouchableOpacity>
+                                    ))
+                                }
+
+
+
+
                             </View>
 
                             <TouchableOpacity
-                                onPress={restartQuiz}
+                                onPress={addGame}
                                 style={{
                                     backgroundColor: COLORS.accent,
+                                    marginTop: 40,
                                     padding: 20, width: '100%', borderRadius: 20
                                 }}
                             >
                                 <Text style={{
                                     textAlign: 'center', color: COLORS.white, fontSize: 20
-                                }}>Retry Quiz</Text>
+                                }}>Add Another Game</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={addPlay}
+                                style={{
+                                    backgroundColor: COLORS.accent,
+                                    marginTop: 40,
+                                    padding: 20, width: '100%', borderRadius: 20
+                                }}
+                            >
+                                <Text style={{
+                                    textAlign: 'center', color: COLORS.white, fontSize: 20
+                                }}>Add Another Play</Text>
                             </TouchableOpacity>
 
 

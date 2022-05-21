@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { View, Text, StatusBar, Image, StyleSheet, TouchableOpacity, Modal, Animated, ScrollView, TouchableHighlight } from 'react-native'
+import React, { useState, useEffect } from "react";
+import { View, Text, StatusBar, Image, StyleSheet, TextInput, TouchableOpacity, Modal, Picker, Switch, Button, Animated, ScrollView, TouchableHighlight, Dimensions, SafeAreaView } from 'react-native'
 import { COLORS, SIZES } from "../constants";
+import { SearchBar } from 'react-native-elements';
 import { useTheme } from "@react-navigation/native";
 
 import Swiper from 'react-native-swiper/src';
@@ -15,631 +16,508 @@ import * as notifications from '../model/Notifications.json';
 // 選擇框框
 import RNPickerSelect from 'react-native-picker-select';
 
-// import { TouchableOpacity} from 'react-native-gesture-handler'
+// 測試資料
+import * as data from '../data/QuizData.json';
+import { color, set } from "react-native-reanimated";
 
-const StatAnalysisScreen = ({ navigation }) => {
-    const { colors } = useTheme();
-    const theme = useTheme;
-
-    // 貼上滑動刪除 swipe delete 的內容
-    const Notifications = notifications.Notifications;
-    const [listData, setListData] = useState(
-        Notifications.map((NotificationItem, index) => ({
-            key: `${index}`,
-            title: NotificationItem.title,
-            details: NotificationItem.details,
-        })),
-    );
-
-    const closeRow = (rowMap, rowKey) => {
-        if (rowMap[rowKey]) {
-            rowMap[rowKey].closeRow();
-        }
-        console.log("執行 closeRow()");
-    };
-    const deleteRow = (rowMap, rowKey) => {
-        closeRow(rowMap, rowKey);
-        const newData = [...listData];
-        const prevIndex = listData.findIndex(item => item.key === rowKey);
-        newData.splice(prevIndex, 1);
-        setListData(newData);
-        console.log("執行 deleteRow()");
-    };
-
-    const onRowDidOpen = rowKey => {
-        console.log('This row opened', rowKey);
-    };
-
-    const onLeftActionStatusChange = rowKey => {
-        console.log('onLeftActionStatusChange', rowKey);
-    };
-
-    const onRightActionStatusChange = rowKey => {
-        console.log('onRightActionStatusChange', rowKey);
-    };
-
-    const onRightAction = rowKey => {
-        console.log('onRightAction', rowKey);
-    };
-
-    const onLeftAction = rowKey => {
-        console.log('onLeftAction', rowKey);
-    };
+import { CSVLink } from "react-csv";
 
 
-    const VisibleItem = props => {
-        const {
-            data,
-            rowHeightAnimatedValue,
-            removeRow,
-            leftActionState,
-            rightActionState,
-        } = props;
+function modify(dict, result) {
+    dict.times++;
+    if(result != 'Pass' && result != 'foul'){
+        dict.control++;
+    }
+    if(result == '2y' || result == '3y'){
+        dict.FGM++;
+    }
+    if(result != 'Pass' && result != 'TO' && result != 'add'){
+        dict['FGA']++;
+    }
+    if(result == '3y'){
+        dict['3PM']++;
+    }
+    if(result == '3y' || result == '3x'){
+        dict['3PA']++;
+    }
+    if(result == 'TO'){
+        dict.miss++;
+    }
+    if(result == 'Pass'){
+        dict.pass++;
+    }
+    if(result == 'foul' || result == 'free throw'){
+        dict.fouled++;
+    }
+    
+    return dict;
+}
 
-        if (rightActionState) {
-            Animated.timing(rowHeightAnimatedValue, {
-                toValue: 0,
-                duration: 100,
-                useNativeDriver: false,
-            }).start(() => {
-                removeRow();
-            });
-        }
+function final_modify(dict, ngame){
+    dict.times /= ngame;
+    dict.control /= ngame;
+    dict.point = (dict['3PM']*3 + (dict['FGM'] - dict['3PM'])*2)/ngame;
+    dict.PPP = dict.point / dict.control;
+    dict.FGM /= ngame;
+    dict.FGA /= ngame;
+    dict['FG%'] = dict.FGM / dict.FGA
+    dict['3PA'] /= ngame;
+    dict['3PM'] /= ngame;
+    dict.miss /= ngame;
+    dict['3P%'] = dict['3PM'] / dict['3PA'];
+    
+    return dict;
+}
 
-        return (
-            <Animated.View
-                style={[styles.rowFront, { height: rowHeightAnimatedValue }]}>
-                <TouchableHighlight
-                    style={styles.rowFrontVisible}
-                    onPress={() => console.log('Element touched')}
-                    underlayColor={'#aaa'}>
-                    <View>
-                        <Text style={styles.title} numberOfLines={1}>
-                            {data.item.title}
-                        </Text>
-                        <Text style={styles.details} numberOfLines={1}>
-                            {data.item.details}
-                        </Text>
-                    </View>
-                </TouchableHighlight>
-            </Animated.View>
-        );
+
+
+const QueryModifyScreen = ({ navigation }) => {
+/* */
+    const [search1, setSearch1] = useState("");
+    const [search2, setSearch2] = useState("");
+
+    const updateSearch1 = (search1) => {
+    setSearch1(search1);
     };
 
-    const renderItem = (data, rowMap) => {
-        const rowHeightAnimatedValue = new Animated.Value(60);
-
-        return (
-            <VisibleItem
-                data={data}
-                rowHeightAnimatedValue={rowHeightAnimatedValue}
-                removeRow={() => deleteRow(rowMap, data.item.key)}
-            />
-        );
+    const updateSearch2 = (search2) => {
+    setSearch2(search2);
     };
+ 
+    const headersAll = [
+        { label: "name", key: "name" },
+        { label: "times", key: "times" },
+        { label: "times%", key: "times%" },
+        { label: "control", key: "control" },
+        { label: "control%", key: "control%" },
+        { label: "point", key: "point" },
+        { label: "PPP", key: "PPP" },
+        { label: "FGM", key: "FGM" },
+        { label: "FGA", key: "FGA" },
+        { label: "FG%", key: "FG%" },
+        { label: "3PA", key: "3PA" },
+        { label: "3PM", key: "3PM" },
+        { label: "3P%", key: "3P%" },
+        { label: "miss", key: "miss" },
+        { label: "pass", key: "pass" },
+        { label: "fouled", key: "fouled" },
+        ];
+        
+        
+    const headers = [
+        { label: "name", key: "name" },
+        { label: "times", key: "times" },
+        { label: "control", key: "control" },
+        { label: "point", key: "point" },
+        { label: "PPP", key: "PPP" },
+        { label: "FGM", key: "FGM" },
+        { label: "FGA", key: "FGA" },
+        { label: "FG%", key: "FG%" },
+        { label: "3PA", key: "3PA" },
+        { label: "3PM", key: "3PM" },
+        { label: "3P%", key: "3P%" },
+        { label: "miss", key: "miss" },
+        { label: "pass", key: "pass" },
+        { label: "fouled", key: "fouled" },
+        ];
+    
+    
+        const data = [
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 1, type: 'Iso', finish: 'Exception', result: 'free throw' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 2, type: 'Catch & Shoot', finish: 'Set shot', result: '2x' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 3, type: 'Atk Close-out', finish: 'Set shot', result: '2y' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 4, type: 'Iso', finish: 'Right shoulder', result: 'foul' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 5, type: 'Cut', finish: 'Post Pin', result: '3y' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 5, type: 'Iso', finish: 'Face up', result: 'TO' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 6, type: 'others', finish: 'Right shoulder', result: 'Pass' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 7, type: 'Off screen', finish: 'Right shoulder', result: '2y' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 8, type: 'Transition', finish: 'Drive Left', result: '2y' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 9, type: 'Eat Cake', finish: 'Face up', result: 'Pass' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 10, type: 'Cut', finish: 'Pull-up Right', result: 'foul' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'Transition', finish: 'Drive Others', result: '2x' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'Put Back', finish: 'Drive Left', result: '3x' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'P&R BH', finish: 'Drive Right', result: 'foul' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'others', finish: 'Drive Left', result: '2x' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'Transition', finish: 'Pull-up Others', result: 'TO' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'Post up', finish: 'Pull-up Right', result: '2y' },
+            ];
+        
+            var dict_lst = [{'name': 'Total'},{'name': 'Transition'},{'name': 'Catch & Shoot'},{'name': 'Atk Close-out'},{'name': 'P&R BH'},{'name': 'others'},{'name': 'Post up'},{'name': 'Iso'},{'name': 'Put Back'},{'name': 'Cut'},{'name': 'Eat Cake'},{'name': 'P&R Men'},{'name': 'Handoff'},{'name': 'Off screen'}];
 
-    const HiddenItemWithActions = props => {
-        const {
-            swipeAnimatedValue,
-            leftActionActivated,
-            rightActionActivated,
-            rowActionAnimatedValue,
-            rowHeightAnimatedValue,
-            onClose,
-            onDelete,
-        } = props;
 
-        if (rightActionActivated) { // 由右向左拉到一個程度，達到某個數字
-            Animated.spring(rowActionAnimatedValue, {
-                toValue: 500,       // 填滿
-                useNativeDriver: false
-            }).start();
-        } else {
-            Animated.spring(rowActionAnimatedValue, {
-                toValue: 75,        // 恢復原樣
-                useNativeDriver: false
-            }).start();
-        }
-
-        return (
-            <Animated.View style={[styles.rowBack, { height: rowHeightAnimatedValue }]}>
-                <Text>Left</Text>
-                {!leftActionActivated && (
-                    <TouchableOpacity
-                        style={[styles.backRightBtn, styles.backRightBtnLeft]}
-                        onPress={onClose}>
-                        <MaterialCommunityIcons
-                            name="close-circle-outline"
-                            size={25}
-                            style={styles.trash}
-                            color="#fff"
-                        />
-                    </TouchableOpacity>
-                )}
-                {!leftActionActivated && (
-                    <Animated.View
-                        style={[
-                            styles.backRightBtn,
-                            styles.backRightBtnRight,
-                            {
-                                flex: 1,
-                                width: rowActionAnimatedValue,
-                            },
-                        ]}>
-                        <TouchableOpacity
-                            style={[styles.backRightBtn, styles.backRightBtnRight]}
-                            onPress={onDelete}>
-                            <Animated.View
-                                style={[
-                                    styles.trash,
-                                    {
-                                        transform: [
-                                            {
-                                                scale: swipeAnimatedValue.interpolate({
-                                                    inputRange: [-90, -45],
-                                                    outputRange: [1, 0],
-                                                    extrapolate: 'clamp',
-                                                }),
-                                            },
-                                        ],
-                                    },
-                                ]}>
-                                <MaterialCommunityIcons
-                                    name="trash-can-outline"
-                                    size={25}
-                                    color="#fff"
-                                />
-                            </Animated.View>
-                        </TouchableOpacity>
-                    </Animated.View>
-                )}
-            </Animated.View>
-        );
-    };
-
-    const renderHiddenItem = (data, rowMap) => {
-        const rowActionAnimatedValue = new Animated.Value(75);
-        const rowHeightAnimatedValue = new Animated.Value(60);
-
-        return (
-            <HiddenItemWithActions
-                data={data}
-                rowMap={rowMap}
-                rowActionAnimatedValue={rowActionAnimatedValue}
-                rowHeightAnimatedValue={rowHeightAnimatedValue}
-                onClose={() => closeRow(rowMap, data.item.key)}
-                onDelete={() => deleteRow(rowMap, data.item.key)}
-            />
-        );
-    };
+            var tot_lst = [{'name': 'Total'},{'name': 'Set shot'},{'name': 'Drive'},{'name': 'Drive Right'},{'name': 'Drive Left'},{'name': 'Drive Others'},{'name': 'Pull-up'},{'name': 'Pull-up Right'},{'name': 'Pull-up Left'},{'name': 'Pull-up Others'},{'name': 'Exception'}]
+            
+            var hab_lst = [{'name':'Right'},{'name':'Left'},{'name':'Others'},{'name':'Exception'}]
+            
+            var pos_lst = [{'name':'Total'},{'name':'Right shoulder'},{'name':'Left shouder'},{'name':'Face up'},{'name':'Post Pin'},{'name':'Pass'},{'name':'Turnover'}]
+            
+            
+            for(var i in dict_lst){
+                dict_lst[i]['times%'] = 0;
+                dict_lst[i]['times'] = 0;
+                dict_lst[i]['control'] = 0;
+                dict_lst[i]['control%'] = 0;
+                dict_lst[i]['point'] = 0;
+                dict_lst[i]['PPP'] = 0;
+                dict_lst[i]['FGM'] = 0;
+                dict_lst[i]['FGA'] = 0;
+                dict_lst[i]['FG%'] = 0;
+                dict_lst[i]['3PA'] = 0;
+                dict_lst[i]['3PM'] = 0;
+                dict_lst[i]['miss'] = 0;
+                dict_lst[i]['pass'] = 0;
+                dict_lst[i]['fouled'] = 0;
+            }
+            
+            for(var i in tot_lst){
+                tot_lst[i]['times'] = 0;
+                tot_lst[i]['control'] = 0;
+                tot_lst[i]['point'] = 0;
+                tot_lst[i]['PPP'] = 0;
+                tot_lst[i]['FGM'] = 0;
+                tot_lst[i]['FGA'] = 0;
+                tot_lst[i]['FG%'] = 0;
+                tot_lst[i]['3PA'] = 0;
+                tot_lst[i]['3PM'] = 0;
+                tot_lst[i]['miss'] = 0;
+                tot_lst[i]['pass'] = 0;
+                tot_lst[i]['fouled'] = 0;
+            }
+            
+            for(var i in hab_lst){
+                hab_lst[i]['times'] = 0;
+                hab_lst[i]['control'] = 0;
+                hab_lst[i]['point'] = 0;
+                hab_lst[i]['PPP'] = 0;
+                hab_lst[i]['FGM'] = 0;
+                hab_lst[i]['FGA'] = 0;
+                hab_lst[i]['FG%'] = 0;
+                hab_lst[i]['3PA'] = 0;
+                hab_lst[i]['3PM'] = 0;
+                hab_lst[i]['miss'] = 0;
+                hab_lst[i]['pass'] = 0;
+                hab_lst[i]['fouled'] = 0;
+            }
+            
+            for(var i in pos_lst){
+                pos_lst[i]['times'] = 0;
+                pos_lst[i]['control'] = 0;
+                pos_lst[i]['point'] = 0;
+                pos_lst[i]['PPP'] = 0;
+                pos_lst[i]['FGM'] = 0;
+                pos_lst[i]['FGA'] = 0;
+                pos_lst[i]['FG%'] = 0;
+                pos_lst[i]['3PA'] = 0;
+                pos_lst[i]['3PM'] = 0;
+                pos_lst[i]['miss'] = 0;
+                pos_lst[i]['pass'] = 0;
+                pos_lst[i]['fouled'] = 0;
+            }
+            
+            
+            for(var i in data){
+                var result = data[i].result;
+                dict_lst[0] = modify(dict_lst[0], result);
+                
+                if(data[i].type == 'Transition'){
+                    dict_lst[1] = modify(dict_lst[1], result);
+                }
+                else if(data[i].type == 'Catch & Shoot'){
+                    dict_lst[2] = modify(dict_lst[2], result);
+                }
+                else if(data[i].type == 'Atk Close-out'){
+                    dict_lst[3] = modify(dict_lst[3], result);
+                }
+                else if(data[i].type == 'P&R BH'){
+                    dict_lst[4] = modify(dict_lst[4], result);
+                }
+                else if(data[i].type == 'others'){
+                    dict_lst[5] = modify(dict_lst[5], result);
+                }
+                else if(data[i].type == 'Post up'){
+                    dict_lst[6] = modify(dict_lst[6], result);
+                }
+                else if(data[i].type == 'Iso'){
+                    dict_lst[7] = modify(dict_lst[7], result);
+                }
+                else if(data[i].type == 'Put Back'){
+                    dict_lst[8] = modify(dict_lst[8], result);
+                }
+                else if(data[i].type == 'Cut'){
+                    dict_lst[9] = modify(dict_lst[9], result);
+                }
+                else if(data[i].type == 'Eat Cake'){
+                    dict_lst[10] = modify(dict_lst[10], result);
+                }
+                else if(data[i].type == 'P&R Men'){
+                    dict_lst[11] = modify(dict_lst[11], result);
+                }
+                else if(data[i].type == 'Handoff'){
+                    dict_lst[12] = modify(dict_lst[12], result);
+                }
+                else if(data[i].type == 'Off screen'){
+                    dict_lst[13] = modify(dict_lst[13], result);
+                }
+                
+                
+                var finish = data[i].finish;
+                
+                if(finish == 'Set shot'){
+                    tot_lst[1] = modify(tot_lst[1], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Drive Right'){
+                    tot_lst[3] = modify(tot_lst[3], result);
+                    tot_lst[2] = modify(tot_lst[2], result);
+                    hab_lst[0] = modify(hab_lst[0], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Drive Left'){
+                    tot_lst[4] = modify(tot_lst[4], result);
+                    tot_lst[2] = modify(tot_lst[2], result);
+                    hab_lst[1] = modify(hab_lst[1], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Drive Others'){
+                    tot_lst[5] = modify(tot_lst[5], result);
+                    tot_lst[2] = modify(tot_lst[2], result);
+                    hab_lst[2] = modify(hab_lst[2], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Pull-up Right'){
+                    tot_lst[7] = modify(tot_lst[7], result);
+                    tot_lst[6] = modify(tot_lst[6], result);
+                    hab_lst[0] = modify(hab_lst[0], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Pull-up Left'){
+                    tot_lst[8] = modify(tot_lst[8], result);
+                    tot_lst[6] = modify(tot_lst[6], result);
+                    hab_lst[1] = modify(hab_lst[1], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Pull-up Others'){
+                    tot_lst[9] = modify(tot_lst[9], result);
+                    tot_lst[6] = modify(tot_lst[6], result);
+                    hab_lst[2] = modify(hab_lst[2], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Exception'){
+                    tot_lst[10] = modify(tot_lst[10], result);
+                    hab_lst[3] = modify(hab_lst[3], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                
+                if(finish == 'Right shoulder'){
+                    pos_lst[1] = modify(pos_lst[1], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Left shoulder'){
+                    pos_lst[2] = modify(pos_lst[2], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Face up'){
+                    pos_lst[3] = modify(pos_lst[3], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Post Pin'){
+                    pos_lst[4] = modify(pos_lst[4], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Pass'){
+                    pos_lst[5] = modify(pos_lst[5], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Turnover'){
+                    pos_lst[6] = modify(pos_lst[6], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+            }
+            
+            
+            var ngame = [...new Set(data.map(item => item.team_id))].length;
+            var ntimes = dict_lst[0]['times'];
+            var ncontrol = dict_lst[0]['control'];
+            
+            
+            for(var i in dict_lst){
+                if(i != 0){
+                    dict_lst[i]['control%'] = dict_lst[i]['control']/ncontrol;
+                    dict_lst[i]['times%'] = dict_lst[i]['times']/ntimes
+                    dict_lst[i] = final_modify(dict_lst[i], ngame);
+                }
+            }
+            
+            for(var i in tot_lst){
+                if(i != 0){
+                    tot_lst[i] = final_modify(tot_lst[i], ngame);
+                }
+            }
+            
+            for(var i in pos_lst){
+                if(i != 0){
+                    pos_lst[i] = final_modify(pos_lst[i], ngame);
+                }
+            }
+            
+            for(var i in hab_lst){
+                hab_lst[i] = final_modify(hab_lst[i], ngame);
+            }
+            
+            for(var i in tot_lst){
+                if(i != 0){
+                    tot_lst[i] = final_modify(tot_lst[i], ngame);
+                }
+            }
+            
+            
+            dict_lst[0]['times%'] = 1;
+            dict_lst[0]['control%'] = 1;
+            dict_lst[0].point = (dict_lst[0]['3PM']*3 + (dict_lst[0]['FGM'] - dict_lst[0]['3PM'])*2)/ngame;
+            dict_lst[0]['PPP'] = dict_lst[0]['point']/dict_lst[0]['control'];
+            dict_lst[0]['FG%'] = dict_lst[0]['FGM']/dict_lst[0]['FGA'];
+            dict_lst[0]['3P%'] = dict_lst[0]['3PM']/dict_lst[0]['3PA'];
+            
+            
+            tot_lst[0].point = (tot_lst[0]['3PM']*3 + (tot_lst[0]['FGM'] - tot_lst[0]['3PM'])*2)/ngame;
+            tot_lst[0]['PPP'] = tot_lst[0]['point']/tot_lst[0]['control'];
+            tot_lst[0]['FG%'] = tot_lst[0]['FGM']/tot_lst[0]['FGA'];
+            tot_lst[0]['3P%'] = tot_lst[0]['3PM']/tot_lst[0]['3PA'];
+            
+            
+            pos_lst[0].point = (pos_lst[0]['3PM']*3 + (pos_lst[0]['FGM'] - pos_lst[0]['3PM'])*2)/ngame;
+            pos_lst[0]['PPP'] = pos_lst[0]['point']/pos_lst[0]['control'];
+            pos_lst[0]['FG%'] = pos_lst[0]['FGM']/pos_lst[0]['FGA'];
+            pos_lst[0]['3P%'] = pos_lst[0]['3PM']/pos_lst[0]['3PA'];
+            
+    
+const csvReport = {
+    data: dict_lst,
+    headers: headersAll,
+    filename: 'Report.csv'
+};
+    
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle={theme.dark ? 'light-content' : 'dark-content'} />
-            <View style={styles.sliderContainer}>
-                <Swiper
-                    autoplay={true}
-                    horizontal={false}
-                    height={200}
-                    activeDotColor="#FFCCCC">
-                    <View style={styles.slide}>
-                        <Image
-                            source={require('../assets/logo.png')}
-                            resizeMode='cover'
-                            style={styles.sliderImage}
+            <View style={styles.header}>
+                <Text style={styles.boldText}>情蒐報表</Text>
+            </View>
+            
+            <View style={styles.cardsWrapper}>
+                    <View style={{flexDirection: "row", padding: 20 }}>
+                        <View style={styles.header}>
+                                <Text style={styles.box}>球隊名稱</Text>
+                        </View>
+                        <SearchBar
+                            round
+                            searchIcon={{ size: 30 }}
+                            onChangeText={updateSearch1}
+                            placeholder="e.g. 台灣大學"
+                            value={search1}
+                            lightTheme={true}
+                            containerStyle={{ backgroundColor: '#ffffff', padding: 15, borderRadius: 30, height:60, width: 500, alignSelf:"center", alignContent: 'center'   }}
+                            inputContainerStyle={{ backgroundColor: 'white' }}
+                            inputStyle={{ backgroundColor: '#FFF8D7', textAlign: 'center', height:30, width: 500, alignSelf:"center", alignContent: 'center'  }}
+                            placeholderTextColor={'gray'}
                         />
+                        <View style={styles.export}>
+                            {/* <Text style={{fontWeight: 'bold', fontSize: 24}}>匯出</Text> */}
+                            <CSVLink {...csvReport}>匯出</CSVLink>
+                        </View>
+                        
                     </View>
-                    <View style={styles.slide}>
-                        <Image
-                            source={require('../assets/logo.jpg')}
-                            resizeMode='cover'
-                            style={styles.sliderImage}
-                        />
-                    </View>
-                </Swiper>
             </View>
-            <View style={styles.categoryContainer}>
-                <View>
-                    <Text style={{
-                        alignSelf: 'center',
-                        fontSize: 18,
-                        fontWeight: 'bold',
-                        color: '#333',
-                    }}>Hello World!Hello World!Hello World!Hello World!</Text>
-                </View>
-            </View>
-            <View style={styles.pickerSelectContainer}>
-                <View>
-                    <RNPickerSelect
-                        placeholder={{
-                            label: '------------請選擇球隊--------------', // 預設空字串，才不會跳錯
-                            value: '', // 預設空字串，才不會跳錯
-                        }}
-                        items={[
-                            { label: "JavaScript", value: "JavaScript" },
-                            { label: "TypeScript", value: "TypeScript" },
-                            { label: "Python", value: "Python" },
-                            { label: "Java", value: "Java" },
-                            { label: "C++", value: "C++" },
-                            { label: "C", value: "C" },
-                        ]}
-                        onValueChange={(value) => { console.log(value); }}
-                    />
-                </View>
-            </View>
-            <View style={styles.pickerSelectContainer}>
-                <View>
-                    <RNPickerSelect
-                        placeholder={{
-                            label: '------------請選擇球隊--------------', // 預設空字串，才不會跳錯
-                            value: '', // 預設空字串，才不會跳錯
-                        }}
-                        items={[
-                            { label: "JavaScript", value: "JavaScript" },
-                            { label: "TypeScript", value: "TypeScript" },
-                            { label: "Python", value: "Python" },
-                            { label: "Java", value: "Java" },
-                            { label: "C++", value: "C++" },
-                            { label: "C", value: "C" },
-                        ]}
-                        onValueChange={(value) => { console.log(value); }}
-                    />
-                </View>
-            </View>
-            <View style={styles.categoryContainer}>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={[styles.categoryContainer, { marginTop: 10 }]}>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <ScrollView>
-                <View style={styles.cardsWrapper}>
-                    <Text
-                        style={{
-                            alignSelf: 'center',
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                            color: '#333',
-                        }}>
-                        Recently Viewed
-                    </Text>
-                    <View style={styles.container}>
-                        {/* <StatusBar backgroundColor="#FF6347" barStyle="light-content"/> */}
-                        <SwipeListView
-                            data={listData}
-                            renderItem={renderItem}
-                            renderHiddenItem={renderHiddenItem}
-                            leftOpenValue={75}
-                            rightOpenValue={-150}
-                            // disableRightSwipe
-                            onRowDidOpen={onRowDidOpen}
-                            leftActivationValue={100}
-                            rightActivationValue={-200}     // 由右向左拉到 -200 就會 extend 刪除的紅色區域
-                            leftActionValue={0}
-                            rightActionValue={-500}
-                            onLeftAction={onLeftAction}
-                            onRightAction={onRightAction}
-                            onLeftActionStatusChange={onLeftActionStatusChange}
-                            onRightActionStatusChange={onRightActionStatusChange}
-                        />
-                    </View>
-                    <View style={styles.card}>
-                        <View style={styles.cardImgWrapper}>
-                            <Image
-                                source={require('../assets/logo.png')}
-                                resizeMode="cover"
-                                style={styles.cardImg}
-                            />
-                        </View>
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>Amazing Food Place</Text>
-                            <Text style={styles.cardDetails}>
-                                Amazing description for this amazing place
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.card}>
-                        <View style={styles.cardImgWrapper}>
-                            <Image
-                                source={require('../assets/logo.png')}
-                                resizeMode="cover"
-                                style={styles.cardImg}
-                            />
-                        </View>
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>Amazing Food Place</Text>
-                            <Text style={styles.cardDetails}>
-                                Amazing description for this amazing place
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.card}>
-                        <View style={styles.cardImgWrapper}>
-                            <Image
-                                source={require('../assets/logo.png')}
-                                resizeMode="cover"
-                                style={styles.cardImg}
-                            />
-                        </View>
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>Amazing Food Place</Text>
-                            <Text style={styles.cardDetails}>
-                                Amazing description for this amazing place
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.card}>
-                        <View style={styles.cardImgWrapper}>
-                            <Image
-                                source={require('../assets/logo.png')}
-                                resizeMode="cover"
-                                style={styles.cardImg}
-                            />
-                        </View>
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>Amazing Food Place</Text>
-                            <Text style={styles.cardDetails}>
-                                Amazing description for this amazing place
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.card}>
-                        <View style={styles.cardImgWrapper}>
-                            <Image
-                                source={require('../assets/logo.png')}
-                                resizeMode="cover"
-                                style={styles.cardImg}
-                            />
-                        </View>
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>Amazing Food Place</Text>
-                            <Text style={styles.cardDetails}>
-                                Amazing description for this amazing place
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.card}>
-                        <View style={styles.cardImgWrapper}>
-                            <Image
-                                source={require('../assets/logo.png')}
-                                resizeMode="cover"
-                                style={styles.cardImg}
-                            />
-                        </View>
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>Amazing Food Place</Text>
-                            <Text style={styles.cardDetails}>
-                                Amazing description for this amazing place
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={styles.card}>
-                        <View style={styles.cardImgWrapper}>
-                            <Image
-                                source={require('../assets/logo.png')}
-                                resizeMode="cover"
-                                style={styles.cardImg}
-                            />
-                        </View>
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>Amazing Food Place</Text>
-                            <Text style={styles.cardDetails}>
-                                Amazing description for this amazing place
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-            </ScrollView>
-        </View>
-    );
 
+
+
+            <View style={styles.cardsWrapper}>
+                    <View style={{flexDirection: "row", padding: 20 }}>
+                        <View style={styles.header}>
+                                <Text style={styles.box}>球員名稱</Text>
+                        </View>
+                        <SearchBar
+                            round
+                            searchIcon={{ size: 30 }}
+                            placeholder="e.g. 資管 booker"
+                            value={search2}
+                            onChangeText={updateSearch2}
+                            lightTheme={true}
+                            containerStyle={{ backgroundColor: '#ffffff', padding: 15, borderRadius: 30, height:60, width: 500, alignSelf:"center", alignContent: 'center'   }}
+                            inputContainerStyle={{ backgroundColor: 'white' }}
+                            inputStyle={{ backgroundColor: '#FFF8D7', textAlign: 'center', height:30, width: 500, alignSelf:"center", alignContent: 'center'  }}
+                            placeholderTextColor={'gray'}
+                        />
+                        
+                        <View style={styles.export}>
+                            <CSVLink {...csvReport}>匯出</CSVLink>
+                        </View>
+                    </View>
+            </View>
+            <View style={{flex:1}}></View>
+
+
+        <StatusBar style="auto" />
+        </View>
+
+        
+    );
 }
 
-export default StatAnalysisScreen;
+
+
+
+export default QueryModifyScreen;
+
+
+
 
 const styles = StyleSheet.create({
-
-    sliderContainer: {
-        height: 200,
-        width: '90%',
-        marginTop: 10,
-        justifyContent: 'center',
-        alignSelf: 'center',
-        borderRadius: 8,
-    },
-
-    pickerSelectContainer: {
-        height: 40,
-        width: '50%',
-        marginTop: 10,
-        justifyContent: 'center',
-        alignSelf: 'flex-start',
-        margin: 30,
-    },
-
-    wrapper: {},
-
-    slide: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: 'transparent',
-        borderRadius: 8,
-    },
-    sliderImage: {
-        height: '100%',
-        width: '100%',
-        alignSelf: 'center',
-        borderRadius: 8,
-    },
-    categoryContainer: {
-        flexDirection: 'row',
-        width: '90%',
-        alignSelf: 'center',
-        marginTop: 25,
-        marginBottom: 10,
-    },
-    categoryBtn: {
-        flex: 1,
-        width: '30%',
-        marginHorizontal: 0,
-        alignSelf: 'center',
-    },
-    categoryIcon: {
-        borderWidth: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        alignSelf: 'center',
-        width: 70,
-        height: 70,
-        backgroundColor: '#fdeae7' /* '#FF6347' */,
-        borderRadius: 50,
-    },
-    categoryBtnTxt: {
-        alignSelf: 'center',
-        marginTop: 5,
-        color: '#de4f35',
-    },
-    cardsWrapper: {
-        marginTop: 20,
-        width: '90%',
-        alignSelf: 'center',
-    },
-    card: {
-        height: 100,
-        marginVertical: 10,
-        flexDirection: 'row',
-        shadowColor: '#999',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
-    },
-    cardImgWrapper: {
-        flex: 1,
-    },
-    cardImg: {
-        height: '100%',
-        width: '100%',
-        alignSelf: 'center',
-        borderRadius: 8,
-        borderBottomRightRadius: 0,
-        borderTopRightRadius: 0,
-    },
-    cardInfo: {
-        flex: 2,
-        padding: 10,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderLeftWidth: 0,
-        borderBottomRightRadius: 8,
-        borderTopRightRadius: 8,
-        backgroundColor: '#fff',
-    },
-    cardTitle: {
-        fontWeight: 'bold',
-    },
-    cardDetails: {
-        fontSize: 12,
-        color: '#444',
-    },
-    container: {
-        backgroundColor: '#f4f4f4',
-        flex: 1,
-    },
-    backTextWhite: {
-        color: '#FFF',
-    },
-    rowFront: {
-        backgroundColor: '#FFF',
-        borderRadius: 5,
-        height: 60,
-        margin: 5,
-        marginBottom: 5,
-        shadowColor: '#999',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
-    },
-    rowFrontVisible: {
-        backgroundColor: '#FFF',
-        borderRadius: 5,
-        height: 60,
-        padding: 10,
-        marginBottom: 15,
-    },
-    rowBack: {
-        alignItems: 'center',
-        backgroundColor: '#DDD',
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingLeft: 15,
-        margin: 5,
-        marginBottom: 15,
-        borderRadius: 5,
-    },
-    backRightBtn: {
-        alignItems: 'flex-end',
-        bottom: 0,
-        justifyContent: 'center',
-        position: 'absolute',
-        top: 0,
-        width: 75,
-        paddingRight: 17,
-    },
-    backRightBtnLeft: {
-        backgroundColor: '#1f65ff',
-        right: 75,
-    },
-    backRightBtnRight: {
-        backgroundColor: 'red',
-        right: 0,
-        borderTopRightRadius: 5,
-        borderBottomRightRadius: 5,
-    },
-    trash: {
-        height: 25,
-        width: 25,
-        marginRight: 7,
-    },
-    title: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        color: '#666',
-    },
-    details: {
-        fontSize: 12,
-        color: '#999',
-    },
-
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    
+  },
+  header: {
+      marginTop: 20,
+      // backgroundColor: 'pink',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 0.8
+      //padding: 20,
+  },
+  body: {
+    backgroundColor: 'yellow',
+    padding: 20,
+  },
+  boldText: {
+    //alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    fontSize: 48,
+  },
+  cardsWrapper: {
+    //marginBottom: 50,
+    //marginLeft: 100,
+    width: '80%',
+    alignSelf: 'center',
+    flex: 1,
+  },
+  export: {
+    marginTop: 20,
+    backgroundColor: 'green',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    marginLeft:50,
+    borderRadius:10,
+    height: 60
+    //flex: 1,
+  },
+  box: {
+    color: 'orange',
+    fontWeight: 'bold',
+    alignSelf: 'left',
+    fontSize: 32,
+},
 });

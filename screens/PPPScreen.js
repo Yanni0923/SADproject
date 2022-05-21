@@ -321,12 +321,12 @@ const PPPScreen = ({ navigation }) => {
                                                 height: 60, borderRadius: 20,
                                                 flexDirection: 'row',
                                                 alignItems: 'center', justifyContent: 'space-between',
-                                                paddingHorizontal: 20,
-                                                marginHorizontal: 10,
+                                                paddingHorizontal: 0,
+                                                marginHorizontal: 0,
                                                 marginVertical: 10
                                             }}
                                         >
-                                            <Text style={{ fontSize: 20, color: COLORS.black }}>{option}</Text>
+                                            <Text style={{ fontSize: 10, color: COLORS.black }}>{option}</Text>
 
                                             {/* Show Check Or Cross Icon based on correct answer*/}
 

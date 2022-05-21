@@ -99,15 +99,15 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "Catch & Shoot": [
                 "Shot",
-                "Others"
+                "Exception"
             ],
             "Eat Cake": [
                 "Set shot",
-                "Others"
+                "Exception"
             ],
             "Atk Close-out": [
                 "Drive right",
@@ -116,7 +116,7 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "P&R BH": [
                 "Set shot",
@@ -126,7 +126,7 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "Iso": [
                 "Set shot",
@@ -136,7 +136,7 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "Put Back": [
                 "Set shot",
@@ -146,21 +146,21 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "Right Post (D)": [
                 "Right shoulder",
                 "Left shoulder",
                 "Face up",
                 "Post pin",
-                "Others"
+                "Exception"
             ],
             "Left Post (D)": [
                 "Right shoulder",
                 "Left shoulder",
                 "Face up",
                 "Post pin",
-                "Others"
+                "Exception"
             ],
             "Off screen": [
                 "Set shot",
@@ -170,7 +170,7 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "Cut": [
                 "Set shot",
@@ -180,7 +180,7 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "P&R Men": [
                 "Set shot",
@@ -190,7 +190,7 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "Hand Off": [
                 "Set shot",
@@ -200,7 +200,7 @@
                 "Pull-up right",
                 "Pull-up left",
                 "Pull-up others",
-                "Others"
+                "Exception"
             ],
             "Others": [
                 "Set shot",
@@ -211,7 +211,7 @@
                 "Pull-up left",
                 "Pull-up others",
                 "Turnover",
-                "Others"
+                "Exception"
             ]
         }
     ],

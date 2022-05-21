@@ -1,618 +1,523 @@
-import React, { useState } from "react";
-import { View, Text, SafeAreaView, StatusBar, Image, TouchableOpacity, Modal, Animated } from 'react-native'
+import React, { useState, useEffect } from "react";
+import { View, Text, StatusBar, Image, StyleSheet, TextInput, TouchableOpacity, Modal, Picker, Switch, Button, Animated, ScrollView, TouchableHighlight, Dimensions, SafeAreaView } from 'react-native'
 import { COLORS, SIZES } from "../constants";
-import * as data from '../data/QuizData.json';
+import { SearchBar } from 'react-native-elements';
+import { useTheme } from "@react-navigation/native";
+
+import Swiper from 'react-native-swiper/src';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Fontisto from 'react-native-vector-icons/Fontisto';
 
-const StatAnalysisScreen = ({ navigation }) => {
+// 滑動刪除
+import { SwipeListView } from 'react-native-swipe-list-view';
+import * as notifications from '../model/Notifications.json';
 
-    const allQuestions = data.data;
-    const allTeams = data.teams;
-    const allGames = data.games;
-    const allPlayers = data.players;
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [currentOptionSelected, setCurrentOptionSelected] = useState(null);
-    const [correctOption, setCorrectOption] = useState(null);
-    const [isOptionDisabled, setIsOptionDisabled] = useState(false);
-    const [score, setScore] = useState(0);
-    const [showNextButton, setShowNextButton] = useState(false);
-    const [showScoreModal, setShowScoreModal] = useState(false);
+// 選擇框框
+import RNPickerSelect from 'react-native-picker-select';
 
-    // Team, Game, Player
-    const [targetTeam, setTargetTeam] = useState(null);
-    const [targetGame, setTargetGame] = useState(null);
-    const [targetPlayer, setTargetPlayer] = useState(null);
+// 測試資料
+import * as data from '../data/QuizData.json';
+import { color, set } from "react-native-reanimated";
 
-    // 只要有選項被點下去，就會執行這個
-    // 選項點下去的部分寫在 renderQuestion()
-    // 所以 validateAnswer 和 renderQuestion() 是綁在一起的
-    const validateAnswer = (selectedOption) => {
-        let correct_option = allQuestions[currentQuestionIndex]['correct_option'];
-        setCurrentOptionSelected(selectedOption);
-        setCorrectOption(correct_option);
-        setIsOptionDisabled(true);
-        if (selectedOption == correct_option) {
-            // Set Score
-            setScore(score + 1);
-        }
+import { CSVLink } from "react-csv";
 
-        // Show Next Button
-        setShowNextButton(true);
 
+function modify(dict, result) {
+    dict.times++;
+    if(result != 'Pass' && result != 'foul'){
+        dict.control++;
     }
-
-
-    // 我要把這裡改成「顯示」&「把 Team 紀錄到資料庫」
-    const validateSelectedTeam = (selectedOption) => {
-        console.log(selectedOption);
-        setTargetTeam(selectedOption); // 儲存選到的球隊
-        setCurrentOptionSelected(selectedOption);
-        // Show Next Button
-        setShowNextButton(true);
-
+    if(result == '2y' || result == '3y'){
+        dict.FGM++;
     }
-
-    // 我要把這裡改成「顯示」&「把 Game 紀錄到資料庫」
-    const validateSelectedGame = (selectedOption) => {
-        console.log(selectedOption);
-        setTargetGame(selectedOption); // 儲存選到的球隊
-        setCurrentOptionSelected(selectedOption);
-        // Show Next Button
-        setShowNextButton(true);
-
+    if(result != 'Pass' && result != 'TO' && result != 'add'){
+        dict['FGA']++;
     }
-
-    // 我要把這裡改成「顯示」&「把 Player 紀錄到資料庫」
-    const validateSelectedPlayer = (selectedOption) => {
-        console.log(selectedOption);
-        setTargetPlayer(selectedOption); // 儲存選到的球隊
-        setCurrentOptionSelected(selectedOption);
-        // Show Next Button
-        setShowNextButton(true);
-
+    if(result == '3y'){
+        dict['3PM']++;
     }
-
-
-
-
-
-    // 重新開始下一次測驗
-    const restartQuiz = () => {
-        setShowScoreModal(false);                          // 把 ScoreModal 那個彈出來的東西關掉
-
-        setCurrentQuestionIndex(0);                        // 重置題號
-        setScore(0);                                       // 重置分數
-
-        setCurrentOptionSelected(null);                    // 把點選的選項都清掉
-        setCorrectOption(null);                            // 把上一題的正確答案清掉
-        setIsOptionDisabled(false);                        // 把選項都開放可以點選
-        setShowNextButton(false);                          // 把 Next Button 關起來
-
-        Animated.timing(progress, {                        // 把進度條歸 0
-            toValue: 0,
-            duration: 1000,
-            useNativeDriver: false
-        }).start();
+    if(result == '3y' || result == '3x'){
+        dict['3PA']++;
     }
-
-
-    // 第一步，選球隊 (Team)
-    const renderSelectTeam = () => {
-        if (currentQuestionIndex == 0) {                // 第 currentQuestionIndex = 0 題是選球隊
-            return (
-                <View>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length} </Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allTeams[0]?.question}</Text>
-                    <View>
-                        {
-                            allTeams.map(option => (
-                                <TouchableOpacity
-                                    onPress={() => validateSelectedTeam(option)}
-                                    key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-                                    {
-                                        option == currentOptionSelected ? (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.success,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="check" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.white,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        )
-                                    }
-
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                </View>
-            )
-        }
+    if(result == 'TO'){
+        dict.miss++;
     }
-
-    // 第二步，選球賽 (Game)
-    const renderSelectGame = () => {
-        if (currentQuestionIndex == 1) {            // 第 currentQuestionIndex = 1 題是選球賽
-            return (
-                <View>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length} </Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allTeams[0]?.question}</Text>
-                    <View>
-                        {
-                            allGames[0]?.options[targetTeam].map(option => (
-                                <TouchableOpacity
-                                    onPress={() => validateSelectedGame(option)}
-                                    key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-                                    {
-                                        option == currentOptionSelected ? (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.success,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="check" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.white,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        )
-                                    }
-
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                </View>
-            )
-        } else {
-            return null
-        }
-
+    if(result == 'Pass'){
+        dict.pass++;
     }
-
-    // 第三步，選球員 (Player)
-    const renderSelectPlayer = () => {
-        if (currentQuestionIndex == 2) {            // 第 currentQuestionIndex = 2 題是選球員
-            return (
-                <View>
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length} </Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>PPP紀錄</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allTeams[0]?.question}</Text>
-                    <View>
-                        {
-                            allPlayers[0][targetTeam].map(option => (
-                                <TouchableOpacity
-                                    onPress={() => validateSelectedPlayer(option)}
-                                    key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-                                    {
-                                        option == currentOptionSelected ? (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.success,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="check" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 30, height: 30, borderRadius: 30 / 2,
-                                                backgroundColor: COLORS.white,
-                                                justifyContent: 'center', alignItems: 'center'
-                                            }}>
-                                                <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                    color: COLORS.white,
-                                                    fontSize: 20
-                                                }} />
-                                            </View>
-                                        )
-                                    }
-
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                </View>
-            )
-        } else {
-            return null
-        }
+    if(result == 'foul' || result == 'free throw'){
+        dict.fouled++;
     }
-
-    // 只要答案公布了(執行完 validateAnswer)，就會執行這個
-    // 選項點下去的部分寫在 renderNextButton()
-    // 所以 handleNext 和 renderNextButton() 是綁在一起的
-    const handleNext = () => {
-        if (currentQuestionIndex == allQuestions.length - 1 + 3) {
-            // 已經跑完所有的題目了
-            // Show Score Modal
-            setShowScoreModal(true);
-        } else {
-            setCurrentQuestionIndex(currentQuestionIndex + 1); // 往後一題，題號 + 1 // 設定前三頁為基本資訊
-            setCurrentOptionSelected(null);                    // 把點選的選項都清掉
-            setCorrectOption(null);                            // 把上一題的正確答案清掉
-            setIsOptionDisabled(false);                        // 把選項都開放可以點選
-            setShowNextButton(false);                          // 把 Next Button 關起來
-        }
-
-        Animated.timing(progress, {
-            toValue: currentQuestionIndex + 1,
-            duration: 1000,
-            useNativeDriver: false
-        }).start();
-
-    }
-
-    const renderQuestion = () => {
-        if (currentQuestionIndex > 2) {
-            return (
-                <View style={{
-                    marginVertical: 40
-                }}>
-                    {/* Question Counter */}
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6, marginRight: 2 }}>{currentQuestionIndex + 1}</Text>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>/ {allQuestions.length}</Text>
-                    </View>
-
-                    {/* Question */}
-                    <Text style={{
-                        color: COLORS.white,
-                        fontSize: 30
-                    }}>{allQuestions[currentQuestionIndex - 3]?.question}</Text>
-                </View>
-            )
-        }
-    }
-
-    const renderOptions = () => {
-        if (currentQuestionIndex > 2) {
-            return (
-                <View>
-                    {
-                        allQuestions[currentQuestionIndex - 3]?.options.map(option => (
-                            <TouchableOpacity
-                                onPress={() => validateSelectedTeam(option)}
-                                key={option}
-                                style={{
-                                    borderWidth: 3,
-                                    borderColor: option == correctOption //把正確與錯誤答案框起來
-                                        ? COLORS.success
-                                        : option == currentOptionSelected
-                                            ? COLORS.error
-                                            : COLORS.secondary + "40",
-                                    backgroundColor: option == correctOption //把正確與錯誤答案的背景顏色改掉
-                                        ? COLORS.success + "20"
-                                        : option == currentOptionSelected
-                                            ? COLORS.error + "20"
-                                            : COLORS.secondary + "20",
-                                    height: 60, borderRadius: 20,
-                                    flexDirection: 'row',
-                                    alignItems: 'center', justifyContent: 'space-between',
-                                    paddingHorizontal: 20,
-                                    marginVertical: 10
-                                }}
-                            >
-                                <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-
-                                {/* Show Check Or Cross Icon based on correct answer*/}
-                                {
-                                    option == correctOption ? (
-                                        <View style={{
-                                            width: 30, height: 30, borderRadius: 30 / 2,
-                                            backgroundColor: COLORS.success,
-                                            justifyContent: 'center', alignItems: 'center'
-                                        }}>
-                                            <MaterialCommunityIcons name="check" style={{
-                                                color: COLORS.white,
-                                                fontSize: 20
-                                            }} />
-                                        </View>
-                                    ) : option == currentOptionSelected ? (
-                                        <View style={{
-                                            width: 30, height: 30, borderRadius: 30 / 2,
-                                            backgroundColor: COLORS.error,
-                                            justifyContent: 'center', alignItems: 'center'
-                                        }}>
-                                            <MaterialCommunityIcons name="close" style={{
-                                                color: COLORS.white,
-                                                fontSize: 20
-                                            }} />
-                                        </View>
-                                    ) : (
-                                        <View style={{
-                                            width: 30, height: 30, borderRadius: 30 / 2,
-                                            backgroundColor: COLORS.white,
-                                            justifyContent: 'center', alignItems: 'center'
-                                        }}>
-                                            <MaterialCommunityIcons name="exclamationcircle" style={{
-                                                color: COLORS.white,
-                                                fontSize: 20
-                                            }} />
-                                        </View>
-                                    )
-                                }
-
-                            </TouchableOpacity>
-                        ))
-                    }
-                </View>
-            )
-        }
-    }
-
-    const renderNextButton = () => {
-        if (showNextButton) {
-            return (
-                <TouchableOpacity
-                    onPress={handleNext}
-                    style={{
-                        marginTop: 20, width: '100%', backgroundColor: COLORS.accent, padding: 20, borderRadius: 5
-                    }}
-                >
-                    <Text style={{ fontSize: 20, color: COLORS.white, textAlign: 'center' }}>Next</Text>
-                </TouchableOpacity>
-            )
-        } else {
-            return null
-        }
-    }
-
-    // 紀錄進行到第幾題的動態 ProgressBar
-    const [progress, setProgress] = useState(new Animated.Value(0));
-    const progressAnim = progress.interpolate({
-        inputRange: [0, allQuestions.length],
-        outputRange: ['0%', '100%']
-    })
-
-    const renderProgressBar = () => {
-        return (
-            <View style={{
-                width: '100%',
-                height: 20,
-                borderRadius: 20,
-                backgroundColor: '#00000020'
-            }}>
-                <Animated.View style={[{
-                    height: 20,
-                    borderRadius: 20,
-                    backgroundColor: COLORS.accent
-                }, {
-                    width: progressAnim
-                }]}>
-
-                </Animated.View>
-
-            </View>
-        )
-    }
-
-    return (
-        <SafeAreaView style={{
-            flex: 1
-        }}>
-            <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
-            <View style={{
-                flex: 1,
-                paddingVertical: 40,
-                paddingHorizontal: 16,
-                backgroundColor: COLORS.background,
-                position: 'relative'
-            }}>
-
-                {/* ProgressBar */}
-                {renderProgressBar()}
-
-                {/* Select Team-Game-Player */}
-                {renderSelectTeam()}
-                {renderSelectGame()}
-                {renderSelectPlayer()}
-
-                {/* Question */}
-                {renderQuestion()}
-
-                {/* Options */}
-                {renderOptions()}
-
-                {/* Next Button */}
-                {renderNextButton()}
-
-                {/* Score Modal */}
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={showScoreModal}
-                >
-                    <View style={{
-                        flex: 1,
-                        backgroundColor: COLORS.primary,
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
-                        <View style={{
-                            backgroundColor: COLORS.white,
-                            width: '90%',
-                            borderRadius: 20,
-                            padding: 20,
-                            alignItems: 'center'
-                        }}>
-                            <Text style={{
-                                fontSize: 30,
-                                fontWeight: 'bold'
-                            }}>{score > (allQuestions.length / 2) ? 'Congratulation!' : 'Oops!'}</Text>
-
-                            <View style={{
-                                flexDirection: 'row',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                marginVertical: 20
-                            }}>
-                                <Text style={{
-                                    fontSize: 30,
-                                    color: score > (allQuestions.length / 2) ? COLORS.success : COLORS.error
-                                }}>{score}</Text>
-                                <Text style={{
-                                    fontSize: 30,
-                                    color: COLORS.black
-                                }}>/ {allQuestions.length}</Text>
-                            </View>
-
-                            <TouchableOpacity
-                                onPress={restartQuiz}
-                                style={{
-                                    backgroundColor: COLORS.accent,
-                                    padding: 20, width: '100%', borderRadius: 20
-                                }}
-                            >
-                                <Text style={{
-                                    textAlign: 'center', color: COLORS.white, fontSize: 20
-                                }}>Retry Quiz</Text>
-                            </TouchableOpacity>
-
-
-                        </View>
-
-                    </View>
-                </Modal>
-
-                {/* Background Image */}
-                <Image
-                    source={require('../assets/images/DottedBG.png')}
-                    style={{
-                        width: SIZES.width,
-                        height: 130,
-                        zIndex: -1,
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        opacity: 0.5
-                    }}
-                    resizeMode={'contain'}
-                />
-
-            </View>
-        </SafeAreaView>
-    )
+    
+    return dict;
 }
 
-export default StatAnalysisScreen;
+function final_modify(dict, ngame){
+    dict.times /= ngame;
+    dict.control /= ngame;
+    dict.point = (dict['3PM']*3 + (dict['FGM'] - dict['3PM'])*2)/ngame;
+    dict.PPP = dict.point / dict.control;
+    dict.FGM /= ngame;
+    dict.FGA /= ngame;
+    dict['FG%'] = dict.FGM / dict.FGA
+    dict['3PA'] /= ngame;
+    dict['3PM'] /= ngame;
+    dict.miss /= ngame;
+    dict['3P%'] = dict['3PM'] / dict['3PA'];
+    
+    return dict;
+}
+
+
+
+const QueryModifyScreen = ({ navigation }) => {
+/* */
+    const [search1, setSearch1] = useState("");
+    const [search2, setSearch2] = useState("");
+
+    const updateSearch1 = (search1) => {
+    setSearch1(search1);
+    };
+
+    const updateSearch2 = (search2) => {
+    setSearch2(search2);
+    };
+ 
+    const headersAll = [
+        { label: "name", key: "name" },
+        { label: "times", key: "times" },
+        { label: "times%", key: "times%" },
+        { label: "control", key: "control" },
+        { label: "control%", key: "control%" },
+        { label: "point", key: "point" },
+        { label: "PPP", key: "PPP" },
+        { label: "FGM", key: "FGM" },
+        { label: "FGA", key: "FGA" },
+        { label: "FG%", key: "FG%" },
+        { label: "3PA", key: "3PA" },
+        { label: "3PM", key: "3PM" },
+        { label: "3P%", key: "3P%" },
+        { label: "miss", key: "miss" },
+        { label: "pass", key: "pass" },
+        { label: "fouled", key: "fouled" },
+        ];
+        
+        
+    const headers = [
+        { label: "name", key: "name" },
+        { label: "times", key: "times" },
+        { label: "control", key: "control" },
+        { label: "point", key: "point" },
+        { label: "PPP", key: "PPP" },
+        { label: "FGM", key: "FGM" },
+        { label: "FGA", key: "FGA" },
+        { label: "FG%", key: "FG%" },
+        { label: "3PA", key: "3PA" },
+        { label: "3PM", key: "3PM" },
+        { label: "3P%", key: "3P%" },
+        { label: "miss", key: "miss" },
+        { label: "pass", key: "pass" },
+        { label: "fouled", key: "fouled" },
+        ];
+    
+    
+        const data = [
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 1, type: 'Iso', finish: 'Exception', result: 'free throw' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 2, type: 'Catch & Shoot', finish: 'Set shot', result: '2x' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 3, type: 'Atk Close-out', finish: 'Set shot', result: '2y' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 4, type: 'Iso', finish: 'Right shoulder', result: 'foul' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 5, type: 'Cut', finish: 'Post Pin', result: '3y' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 5, type: 'Iso', finish: 'Face up', result: 'TO' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 6, type: 'others', finish: 'Right shoulder', result: 'Pass' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 7, type: 'Off screen', finish: 'Right shoulder', result: '2y' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 8, type: 'Transition', finish: 'Drive Left', result: '2y' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 9, type: 'Eat Cake', finish: 'Face up', result: 'Pass' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 10, type: 'Cut', finish: 'Pull-up Right', result: 'foul' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'Transition', finish: 'Drive Others', result: '2x' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'Put Back', finish: 'Drive Left', result: '3x' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'P&R BH', finish: 'Drive Right', result: 'foul' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'others', finish: 'Drive Left', result: '2x' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'Transition', finish: 'Pull-up Others', result: 'TO' },
+            { team_id: 1, player_id: 1, game_id: 1, play_id: 11, type: 'Post up', finish: 'Pull-up Right', result: '2y' },
+            ];
+        
+            var dict_lst = [{'name': 'Total'},{'name': 'Transition'},{'name': 'Catch & Shoot'},{'name': 'Atk Close-out'},{'name': 'P&R BH'},{'name': 'others'},{'name': 'Post up'},{'name': 'Iso'},{'name': 'Put Back'},{'name': 'Cut'},{'name': 'Eat Cake'},{'name': 'P&R Men'},{'name': 'Handoff'},{'name': 'Off screen'}];
+
+
+            var tot_lst = [{'name': 'Total'},{'name': 'Set shot'},{'name': 'Drive'},{'name': 'Drive Right'},{'name': 'Drive Left'},{'name': 'Drive Others'},{'name': 'Pull-up'},{'name': 'Pull-up Right'},{'name': 'Pull-up Left'},{'name': 'Pull-up Others'},{'name': 'Exception'}]
+            
+            var hab_lst = [{'name':'Right'},{'name':'Left'},{'name':'Others'},{'name':'Exception'}]
+            
+            var pos_lst = [{'name':'Total'},{'name':'Right shoulder'},{'name':'Left shouder'},{'name':'Face up'},{'name':'Post Pin'},{'name':'Pass'},{'name':'Turnover'}]
+            
+            
+            for(var i in dict_lst){
+                dict_lst[i]['times%'] = 0;
+                dict_lst[i]['times'] = 0;
+                dict_lst[i]['control'] = 0;
+                dict_lst[i]['control%'] = 0;
+                dict_lst[i]['point'] = 0;
+                dict_lst[i]['PPP'] = 0;
+                dict_lst[i]['FGM'] = 0;
+                dict_lst[i]['FGA'] = 0;
+                dict_lst[i]['FG%'] = 0;
+                dict_lst[i]['3PA'] = 0;
+                dict_lst[i]['3PM'] = 0;
+                dict_lst[i]['miss'] = 0;
+                dict_lst[i]['pass'] = 0;
+                dict_lst[i]['fouled'] = 0;
+            }
+            
+            for(var i in tot_lst){
+                tot_lst[i]['times'] = 0;
+                tot_lst[i]['control'] = 0;
+                tot_lst[i]['point'] = 0;
+                tot_lst[i]['PPP'] = 0;
+                tot_lst[i]['FGM'] = 0;
+                tot_lst[i]['FGA'] = 0;
+                tot_lst[i]['FG%'] = 0;
+                tot_lst[i]['3PA'] = 0;
+                tot_lst[i]['3PM'] = 0;
+                tot_lst[i]['miss'] = 0;
+                tot_lst[i]['pass'] = 0;
+                tot_lst[i]['fouled'] = 0;
+            }
+            
+            for(var i in hab_lst){
+                hab_lst[i]['times'] = 0;
+                hab_lst[i]['control'] = 0;
+                hab_lst[i]['point'] = 0;
+                hab_lst[i]['PPP'] = 0;
+                hab_lst[i]['FGM'] = 0;
+                hab_lst[i]['FGA'] = 0;
+                hab_lst[i]['FG%'] = 0;
+                hab_lst[i]['3PA'] = 0;
+                hab_lst[i]['3PM'] = 0;
+                hab_lst[i]['miss'] = 0;
+                hab_lst[i]['pass'] = 0;
+                hab_lst[i]['fouled'] = 0;
+            }
+            
+            for(var i in pos_lst){
+                pos_lst[i]['times'] = 0;
+                pos_lst[i]['control'] = 0;
+                pos_lst[i]['point'] = 0;
+                pos_lst[i]['PPP'] = 0;
+                pos_lst[i]['FGM'] = 0;
+                pos_lst[i]['FGA'] = 0;
+                pos_lst[i]['FG%'] = 0;
+                pos_lst[i]['3PA'] = 0;
+                pos_lst[i]['3PM'] = 0;
+                pos_lst[i]['miss'] = 0;
+                pos_lst[i]['pass'] = 0;
+                pos_lst[i]['fouled'] = 0;
+            }
+            
+            
+            for(var i in data){
+                var result = data[i].result;
+                dict_lst[0] = modify(dict_lst[0], result);
+                
+                if(data[i].type == 'Transition'){
+                    dict_lst[1] = modify(dict_lst[1], result);
+                }
+                else if(data[i].type == 'Catch & Shoot'){
+                    dict_lst[2] = modify(dict_lst[2], result);
+                }
+                else if(data[i].type == 'Atk Close-out'){
+                    dict_lst[3] = modify(dict_lst[3], result);
+                }
+                else if(data[i].type == 'P&R BH'){
+                    dict_lst[4] = modify(dict_lst[4], result);
+                }
+                else if(data[i].type == 'others'){
+                    dict_lst[5] = modify(dict_lst[5], result);
+                }
+                else if(data[i].type == 'Post up'){
+                    dict_lst[6] = modify(dict_lst[6], result);
+                }
+                else if(data[i].type == 'Iso'){
+                    dict_lst[7] = modify(dict_lst[7], result);
+                }
+                else if(data[i].type == 'Put Back'){
+                    dict_lst[8] = modify(dict_lst[8], result);
+                }
+                else if(data[i].type == 'Cut'){
+                    dict_lst[9] = modify(dict_lst[9], result);
+                }
+                else if(data[i].type == 'Eat Cake'){
+                    dict_lst[10] = modify(dict_lst[10], result);
+                }
+                else if(data[i].type == 'P&R Men'){
+                    dict_lst[11] = modify(dict_lst[11], result);
+                }
+                else if(data[i].type == 'Handoff'){
+                    dict_lst[12] = modify(dict_lst[12], result);
+                }
+                else if(data[i].type == 'Off screen'){
+                    dict_lst[13] = modify(dict_lst[13], result);
+                }
+                
+                
+                var finish = data[i].finish;
+                
+                if(finish == 'Set shot'){
+                    tot_lst[1] = modify(tot_lst[1], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Drive Right'){
+                    tot_lst[3] = modify(tot_lst[3], result);
+                    tot_lst[2] = modify(tot_lst[2], result);
+                    hab_lst[0] = modify(hab_lst[0], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Drive Left'){
+                    tot_lst[4] = modify(tot_lst[4], result);
+                    tot_lst[2] = modify(tot_lst[2], result);
+                    hab_lst[1] = modify(hab_lst[1], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Drive Others'){
+                    tot_lst[5] = modify(tot_lst[5], result);
+                    tot_lst[2] = modify(tot_lst[2], result);
+                    hab_lst[2] = modify(hab_lst[2], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Pull-up Right'){
+                    tot_lst[7] = modify(tot_lst[7], result);
+                    tot_lst[6] = modify(tot_lst[6], result);
+                    hab_lst[0] = modify(hab_lst[0], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Pull-up Left'){
+                    tot_lst[8] = modify(tot_lst[8], result);
+                    tot_lst[6] = modify(tot_lst[6], result);
+                    hab_lst[1] = modify(hab_lst[1], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Pull-up Others'){
+                    tot_lst[9] = modify(tot_lst[9], result);
+                    tot_lst[6] = modify(tot_lst[6], result);
+                    hab_lst[2] = modify(hab_lst[2], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                else if(finish == 'Exception'){
+                    tot_lst[10] = modify(tot_lst[10], result);
+                    hab_lst[3] = modify(hab_lst[3], result);
+                    tot_lst[0] = modify(tot_lst[0], result);
+                }
+                
+                if(finish == 'Right shoulder'){
+                    pos_lst[1] = modify(pos_lst[1], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Left shoulder'){
+                    pos_lst[2] = modify(pos_lst[2], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Face up'){
+                    pos_lst[3] = modify(pos_lst[3], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Post Pin'){
+                    pos_lst[4] = modify(pos_lst[4], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Pass'){
+                    pos_lst[5] = modify(pos_lst[5], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+                else if(finish == 'Turnover'){
+                    pos_lst[6] = modify(pos_lst[6], result);
+                    pos_lst[0] = modify(pos_lst[0], result);
+                }
+            }
+            
+            
+            var ngame = [...new Set(data.map(item => item.team_id))].length;
+            var ntimes = dict_lst[0]['times'];
+            var ncontrol = dict_lst[0]['control'];
+            
+            
+            for(var i in dict_lst){
+                if(i != 0){
+                    dict_lst[i]['control%'] = dict_lst[i]['control']/ncontrol;
+                    dict_lst[i]['times%'] = dict_lst[i]['times']/ntimes
+                    dict_lst[i] = final_modify(dict_lst[i], ngame);
+                }
+            }
+            
+            for(var i in tot_lst){
+                if(i != 0){
+                    tot_lst[i] = final_modify(tot_lst[i], ngame);
+                }
+            }
+            
+            for(var i in pos_lst){
+                if(i != 0){
+                    pos_lst[i] = final_modify(pos_lst[i], ngame);
+                }
+            }
+            
+            for(var i in hab_lst){
+                hab_lst[i] = final_modify(hab_lst[i], ngame);
+            }
+            
+            for(var i in tot_lst){
+                if(i != 0){
+                    tot_lst[i] = final_modify(tot_lst[i], ngame);
+                }
+            }
+            
+            
+            dict_lst[0]['times%'] = 1;
+            dict_lst[0]['control%'] = 1;
+            dict_lst[0].point = (dict_lst[0]['3PM']*3 + (dict_lst[0]['FGM'] - dict_lst[0]['3PM'])*2)/ngame;
+            dict_lst[0]['PPP'] = dict_lst[0]['point']/dict_lst[0]['control'];
+            dict_lst[0]['FG%'] = dict_lst[0]['FGM']/dict_lst[0]['FGA'];
+            dict_lst[0]['3P%'] = dict_lst[0]['3PM']/dict_lst[0]['3PA'];
+            
+            
+            tot_lst[0].point = (tot_lst[0]['3PM']*3 + (tot_lst[0]['FGM'] - tot_lst[0]['3PM'])*2)/ngame;
+            tot_lst[0]['PPP'] = tot_lst[0]['point']/tot_lst[0]['control'];
+            tot_lst[0]['FG%'] = tot_lst[0]['FGM']/tot_lst[0]['FGA'];
+            tot_lst[0]['3P%'] = tot_lst[0]['3PM']/tot_lst[0]['3PA'];
+            
+            
+            pos_lst[0].point = (pos_lst[0]['3PM']*3 + (pos_lst[0]['FGM'] - pos_lst[0]['3PM'])*2)/ngame;
+            pos_lst[0]['PPP'] = pos_lst[0]['point']/pos_lst[0]['control'];
+            pos_lst[0]['FG%'] = pos_lst[0]['FGM']/pos_lst[0]['FGA'];
+            pos_lst[0]['3P%'] = pos_lst[0]['3PM']/pos_lst[0]['3PA'];
+            
+    
+const csvReport = {
+    data: dict_lst,
+    headers: headersAll,
+    filename: 'Report.csv'
+};
+    
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.boldText}>情蒐報表</Text>
+            </View>
+            
+            <View style={styles.cardsWrapper}>
+                    <View style={{flexDirection: "row", padding: 20 }}>
+                        <View style={styles.header}>
+                                <Text style={styles.box}>球隊名稱</Text>
+                        </View>
+                        <SearchBar
+                            round
+                            searchIcon={{ size: 30 }}
+                            onChangeText={updateSearch1}
+                            placeholder="e.g. 台灣大學"
+                            value={search1}
+                            lightTheme={true}
+                            containerStyle={{ backgroundColor: '#ffffff', padding: 15, borderRadius: 30, height:60, width: 500, alignSelf:"center", alignContent: 'center'   }}
+                            inputContainerStyle={{ backgroundColor: 'white' }}
+                            inputStyle={{ backgroundColor: '#FFF8D7', textAlign: 'center', height:30, width: 500, alignSelf:"center", alignContent: 'center'  }}
+                            placeholderTextColor={'gray'}
+                        />
+                        <View style={styles.export}>
+                            {/* <Text style={{fontWeight: 'bold', fontSize: 24}}>匯出</Text> */}
+                            <CSVLink {...csvReport}>匯出</CSVLink>
+                        </View>
+                        
+                    </View>
+            </View>
+
+
+
+            <View style={styles.cardsWrapper}>
+                    <View style={{flexDirection: "row", padding: 20 }}>
+                        <View style={styles.header}>
+                                <Text style={styles.box}>球員名稱</Text>
+                        </View>
+                        <SearchBar
+                            round
+                            searchIcon={{ size: 30 }}
+                            placeholder="e.g. 資管 booker"
+                            value={search2}
+                            onChangeText={updateSearch2}
+                            lightTheme={true}
+                            containerStyle={{ backgroundColor: '#ffffff', padding: 15, borderRadius: 30, height:60, width: 500, alignSelf:"center", alignContent: 'center'   }}
+                            inputContainerStyle={{ backgroundColor: 'white' }}
+                            inputStyle={{ backgroundColor: '#FFF8D7', textAlign: 'center', height:30, width: 500, alignSelf:"center", alignContent: 'center'  }}
+                            placeholderTextColor={'gray'}
+                        />
+                        
+                        <View style={styles.export}>
+                            <CSVLink {...csvReport}>匯出</CSVLink>
+                        </View>
+                    </View>
+            </View>
+            <View style={{flex:1}}></View>
+
+
+        <StatusBar style="auto" />
+        </View>
+
+        
+    );
+}
+
+
+
+
+export default QueryModifyScreen;
+
+
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    
+  },
+  header: {
+      marginTop: 20,
+      // backgroundColor: 'pink',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 0.8
+      //padding: 20,
+  },
+  body: {
+    backgroundColor: 'yellow',
+    padding: 20,
+  },
+  boldText: {
+    //alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    fontSize: 48,
+  },
+  cardsWrapper: {
+    //marginBottom: 50,
+    //marginLeft: 100,
+    width: '80%',
+    alignSelf: 'center',
+    flex: 1,
+  },
+  export: {
+    marginTop: 20,
+    backgroundColor: 'green',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    marginLeft:50,
+    borderRadius:10,
+    height: 60
+    //flex: 1,
+  },
+  box: {
+    color: 'orange',
+    fontWeight: 'bold',
+    alignSelf: 'left',
+    fontSize: 32,
+},
+});

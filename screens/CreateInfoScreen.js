@@ -349,3 +349,4 @@ const pickerSelectStyles = StyleSheet.create({
         fontSize: '100%',
     },
 });
+export default CreateInfoScreen;

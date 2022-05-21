@@ -19,7 +19,7 @@
             "email": "testuser@email.com",
             "username": "testuser",
             "password": "testpass",
-            " userToken": "testtoken"
+            "userToken": "testtoken"
         }
     ]
 }

@@ -361,7 +361,7 @@ const PPPScreen = ({ navigation }) => {
                             >
                                 <Text style={{
                                     textAlign: 'center', color: COLORS.white, fontSize: 20
-                                }}>Add Another Play</Text>
+                                }}>Add Another  Play</Text>
                             </TouchableOpacity>
 
 

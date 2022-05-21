@@ -20,7 +20,7 @@ import { AuthContext } from '../components/context';
 
 import RootStackScreen from '../screens/RootStackScreen';
 
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Drawer = createDrawerNavigator();
 

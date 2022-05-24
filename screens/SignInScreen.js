@@ -110,7 +110,7 @@ const SignInScreen = ({ navigation }) => {
     const login = (username, password) => {
         if (username !== "" && password !== "") {
             axios
-                .post("http://localhost:7000/signin", {
+                .post("http://localhost:7777/signin", {
                     username: username,
                     password: password,
                 })

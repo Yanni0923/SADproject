@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { Component, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert,
     StyleSheet, Animated, TouchableHighlight, StatusBar
@@ -20,7 +21,7 @@ const CreateInfoScreen = ({ navigation }) => {
     const [typeSelected, setTypeSelected] = useState('');
 
     const [msgSuccess, setMsgSuccess] = useState('');
-    const [msgError, setMsgError] = useState('');
+    const msgError = '*必填';
     // Team
     const [team, onChangeTeam] = useState('');
     const [school, onChangeSchool] = useState('');
@@ -28,33 +29,120 @@ const CreateInfoScreen = ({ navigation }) => {
     // Game
     const [homeTeam, setHomeTeam] = useState("");
     const [awayTeam, setAwayTeam] = useState("");
-    const [date, setDate] = useState(new Date());
+    const [date, onChangeDate] = useState("");
     // Player
     const [belongTeam, setBelongTeam] = useState("");
     const [position, setPosition] = useState("");
     const [name, onChangeName] = useState("");
     const [number, onChangeNumber] = useState("");
 
+    const [teams, setTeams] = useState([]);
+
+    const getTeamsList = (() => {
+        // Get team data
+        axios.get('http://localhost:7777/getTeams')
+            .then((response) => {
+                const teamList = response.data['data'];
+                const teams_updated = teamList.map((e) => {return { label: e, value: e }});
+                console.log(teams_updated);
+                setTeams(teams_updated);
+                console.log(teams);
+                // some mysterious issues here...
+            })
+            .catch((error) => { console.error(error) })
+    });
+
     const onSelect = (key) => {
         setTypeSelected(key);
+        // refresh values
         setMsgSuccess('');
+        onChangeTeam('');
+        onChangeSchool('');
+        onChangeCoach('');
+        setHomeTeam('');
+        setAwayTeam('');
+        onChangeDate('');
+        setBelongTeam('');
+        setPosition('');
+        onChangeName('');
+        onChangeNumber('');
+        getTeamsList();    // update teams
     }
     const onPress = () => {
         // Insert {team, school, ...} into database
-
-        // Error if text input field is blank.
-        // if () {
-        //     setMsgError(() => '*此欄位必填')
-        // }
+        // TODO: Check if input data is in correct data type
         let suffix = '';
         if (typeSelected === '球隊') {
-            suffix = team;
+            if (team && school && coach) {
+                axios
+                    .post("http://localhost:7777/createTeam", {
+                        name: team,
+                        school: school,
+                        coach: coach
+                    })
+                    .then((res) => {
+                        console.log(res.data['message']);
+                        if (res.data['message'] == 'Created team: ' + team) {
+                            suffix = team;
+                            setMsgSuccess(() => '成功新增' + typeSelected + ' ' + suffix);
+                        }
+                    })
+                    .catch((e) => {
+                        if (e.response.error) {
+                            alert("Server Error: Check the console for details.");
+                        }
+                    });
+            } else {
+                alert('請確認所有資料皆已填寫完畢！');
+            }
         } else if (typeSelected === '球賽') {
-            suffix = homeTeam + ' vs. ' + awayTeam;
+            if (homeTeam && awayTeam && date) {
+                axios
+                    .post("http://localhost:7777/createGame", {
+                        host: homeTeam,
+                        guest: awayTeam,
+                        date: date
+                    })
+                    .then((res) => {
+                        console.log(res.data['message']);
+                        if (res.data['message'] == 'Created game') {
+                            suffix = homeTeam + ' vs. ' + awayTeam;
+                            setMsgSuccess(() => '成功新增'+typeSelected+' '+suffix);
+                        }
+                    })
+                    .catch((e) => {
+                        if (e.response.error) {
+                            alert("Server Error: Check the console for details.");
+                        }
+                    });
+            } else {
+                alert('請確認所有資料皆已填寫完畢！');
+            }
         } else if (typeSelected === '球員') {
-            suffix = name;
+            if (belongTeam && position && name && number) {
+                axios
+                    .post("http://localhost:7777/createPlayer", {
+                        team: belongTeam,
+                        name: name,
+                        position: position,
+                        number: number
+                    })
+                    .then((res) => {
+                        console.log(res.data['message']);
+                        if (res.data['message'] == 'Created player: ' + name) {
+                            suffix = name;
+                            setMsgSuccess(() => '成功新增'+typeSelected+' '+suffix);
+                        }
+                    })
+                    .catch((e) => {
+                        if (e.response.error) {
+                            alert("Server Error: Check the console for details.");
+                        }
+                    });
+            } else {
+                alert('請確認所有資料皆已填寫完畢！');
+            }
         }
-        setMsgSuccess(() => '成功新增'+typeSelected+' '+suffix);
     }
 
     return (
@@ -91,7 +179,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 style={styles.textInput}
                                 placeholder="NTU Owls"
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(team === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <Text style={styles.subheading}>所屬學校／團體</Text>
                         <View style={styles.input}>
@@ -101,7 +189,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 style={styles.textInput}
                                 placeholder="國立臺灣大學"
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(school === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <Text style={styles.subheading}>教練姓名</Text>
                         <View style={styles.input}>
@@ -111,7 +199,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 style={styles.textInput}
                                 placeholder="Terry"
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(coach === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <TouchableOpacity
                             style={styles.button}
@@ -129,46 +217,32 @@ const CreateInfoScreen = ({ navigation }) => {
                         <Text style={styles.subheading}>主隊名稱</Text>
                         <View style={styles.input}>
                             <RNPickerSelect
-                                placeholder={{ label: "選擇球隊", value: null }}
+                                placeholder={{ label: "選擇球隊", value: "" }}
                                 style={pickerSelectStyles}
                                 onValueChange={(homeTeam) => setHomeTeam(homeTeam)}
-                                items={[
-                                    { label: "JavaScript", value: "JavaScript" },
-                                    { label: "TypeScript", value: "TypeScript" },
-                                    { label: "Python", value: "Python" },
-                                    { label: "Java", value: "Java" },
-                                    { label: "C++", value: "C++" },
-                                    { label: "C", value: "C" },
-                                ]}
+                                items={ teams }
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(homeTeam === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <Text style={styles.subheading}>客隊名稱</Text>
                         <View style={styles.input}>
                             <RNPickerSelect
-                                placeholder={{ label: "選擇球隊", value: null }}
+                                placeholder={{ label: "選擇球隊", value: "" }}
                                 style={pickerSelectStyles}
                                 onValueChange={(awayTeam) => setAwayTeam(awayTeam)}
-                                items={[
-                                    { label: "JavaScript", value: "JavaScript" },
-                                    { label: "TypeScript", value: "TypeScript" },
-                                    { label: "Python", value: "Python" },
-                                    { label: "Java", value: "Java" },
-                                    { label: "C++", value: "C++" },
-                                    { label: "C", value: "C" },
-                                ]}
+                                items={ teams }
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(awayTeam === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <Text style={styles.subheading}>比賽日期</Text>
                         <View style={styles.input}>
                             <TextInput
-                                onChangeText={onChangeCoach}
-                                value={coach}
+                                onChangeText={onChangeDate}
+                                value={date}
                                 style={styles.textInput}
                                 placeholder="2022-05-18"
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(date === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <TouchableOpacity
                             style={styles.button}
@@ -186,24 +260,17 @@ const CreateInfoScreen = ({ navigation }) => {
                         <Text style={styles.subheading}>球隊名稱</Text>
                         <View style={styles.input}>
                             <RNPickerSelect
-                                placeholder={{ label: "選擇球隊", value: null }}
+                                placeholder={{ label: "選擇球隊", value: '' }}
                                 style={pickerSelectStyles}
                                 onValueChange={(belongTeam) => setBelongTeam(belongTeam)}
-                                items={[
-                                    { label: "NTU Owls", value: "NTU Owls" },
-                                    { label: "TypeScript", value: "TypeScript" },
-                                    { label: "Python", value: "Python" },
-                                    { label: "Java", value: "Java" },
-                                    { label: "C++", value: "C++" },
-                                    { label: "C", value: "C" },
-                                ]}
+                                items={ teams }
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(belongTeam === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <Text style={styles.subheading}>位置</Text>
                         <View style={styles.input}>
                             <RNPickerSelect
-                                placeholder={{ label: "選擇位置", value: null }}
+                                placeholder={{ label: "選擇位置", value: '' }}
                                 style={pickerSelectStyles}
                                 onValueChange={(position) => setPosition(position)}
                                 items={[
@@ -214,7 +281,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                     { label: "中鋒(C)", value: "C" },
                                 ]}
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(position === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <Text style={styles.subheading}>球員名稱</Text>
                         <View style={styles.input}>
@@ -224,7 +291,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 style={styles.textInput}
                                 placeholder="Adam Silver"
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(name === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <Text style={styles.subheading}>球員背號</Text>
                         <View style={styles.input}>
@@ -234,7 +301,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 style={styles.textInput}
                                 placeholder="23"
                             />
-                            <Text style={styles.messageError}>{msgError}</Text>
+                            {(number === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
                         <TouchableOpacity
                             style={styles.button}
@@ -273,7 +340,8 @@ const styles = StyleSheet.create({
     },
     subheading: {
         // size
-        paddingBottom: 10,
+        paddingTop: 8,
+        paddingBottom: 8,
         // style
         fontSize: '120%',
         fontWeight: 500
@@ -312,7 +380,8 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     messageError: {
-        color: 'red'
+        color: 'red',
+        paddingTop: 3
     },
     tabbar: {
         display: 'flex',
@@ -343,10 +412,8 @@ const pickerSelectStyles = StyleSheet.create({
     inputWeb: {
         paddingHorizontal: 10,
         paddingVertical: 8,
-        marginTop: 8,
         borderWidth: 1.8,
         borderRadius: 20,
         fontSize: '100%',
     },
 });
-export default CreateInfoScreen;

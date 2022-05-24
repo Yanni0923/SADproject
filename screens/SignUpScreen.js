@@ -76,7 +76,7 @@ const SignUpScreen = ({ navigation }) => {
     const signupHandle = (username, password, confirm_password) => {
         if (username !== "" && password !== "" && confirm_password !== "") {
             axios
-                .post("http://localhost:7000/signup", {
+                .post("http://localhost:7777/signup", {
                     username,
                     password,
                     confirm_password

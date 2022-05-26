@@ -39,7 +39,7 @@ const getMultiList = ((rows, name_list ) => {
     }
     return values;
 });
-pp.get('/getTeamsWithId', (request, response) => {
+app.get('/getTeamsWithId', (request, response) => {
     db.query(
         `SELECT * FROM team`,
         function (err, rows) {

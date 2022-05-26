@@ -1,3 +1,4 @@
+
 const express = require("express");
 const db = require('./config/db');
 const app = express();
@@ -25,7 +26,43 @@ const getList = ((rows, cname, ) => {
     }
     return values;
 });
-
+const getMultiList = ((rows, name_list ) => {
+    // get list of values of a column from RowDataPacket
+    obj = JSON.parse(JSON.stringify(rows));
+    values = [];
+    for (let i = 0; i < obj.length; i++) {
+        sub_value = [];
+        for (let j = 0; j <  name_list.length; j++) {
+            sub_value.push(obj[i][name_list[j]])
+        }
+        values.push(sub_value);
+    }
+    return values;
+});
+pp.get('/getTeamsWithId', (request, response) => {
+    db.query(
+        `SELECT * FROM team`,
+        function (err, rows) {
+            teams = getMultiList(rows, ['team_id', 'name']);
+            console.log(teams);
+            if (rows.length === 0) {
+                console.log('No teams found.')
+            }
+            if (err) {
+                error_msg = err.code + ": Server Error";
+                console.log(error_msg);
+                return response.send({ message: error_msg });
+            };
+            id = teams.map(function(element){
+                return element[0];
+            });
+            teamName = teams.map(function(element){
+                return element[1];
+            });
+            return response.send({id:id, teamName:teamName});
+        }
+    )
+});
 app.post("/signin", function (req, res) {
     const { username, password } = req.body;
     db.query(

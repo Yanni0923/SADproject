@@ -3,11 +3,11 @@ import { View, Text, SafeAreaView, StatusBar, Image, TouchableOpacity, Modal, An
 import { COLORS, SIZES } from "../constants";
 import * as data from '../data/QuizData.json';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import axios from 'axios';
 const PPPScreen = ({ navigation }) => {
     const problem_length = 5;
 
-    const allTeams = data.teams;
+    const [allTeams, setAllTeams] = useState(data.teams);
     const allGames = data.games;
     const allPlayers = data.players;
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -33,7 +33,19 @@ const PPPScreen = ({ navigation }) => {
     // 只要有選項被點下去，就會執行這個
     // 選項點下去的部分寫在 renderQuestion()
     // 所以 validateAnswer 和 renderQuestion() 是綁在一起的
-
+    const getTeamsList = (() => {
+        // Get team data
+        axios.get('http://localhost:7777/getTeamsWithId')
+            .then((response) => {
+                const teamList = response.data['id'];
+                console.log(teamList);
+                setAllTeams(teamList);
+                console.log(allTeams);
+                // some mysterious issues here...
+            })
+            .catch((error) => { console.error(error) })
+    });
+    
     // 我要把這裡改成「顯示」&「把 Team 紀錄到資料庫」
     const validateSelected = (selectedOption) => {
         console.log(selectedOption);
@@ -190,6 +202,7 @@ const PPPScreen = ({ navigation }) => {
             // Show Score Modal
             setShowScoreModal(true);
         } else {
+            getTeamsList();
             setCurrentQuestionIndex(currentQuestionIndex + 1); // 往後一題，題號 + 1 // 設定前三頁為基本資訊
             setCurrentOptionSelected(null);                    // 把點選的選項都清掉
             setShowNextButton(false);                          // 把 Next Button 關起來

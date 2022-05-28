@@ -116,7 +116,7 @@ const SignInScreen = ({ navigation }) => {
                 })
                 .then((res) => {
                     if (res.data['message'] == 'LOGIN_SUCCESSFULLY') {
-                        setSignInState(() => '歡迎使用者' + username + '登入成功！');
+                        setSignInState(() => '歡迎使用者 ' + username + ' 登入成功！');
                     }
                     else if (res.data['message'] == 'ACCOUNT_NOT_EXIST') {
                         setSignInState(() => '此使用者名稱與密碼不存在！');

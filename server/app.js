@@ -168,3 +168,18 @@ app.post("/getGamesByTeam", function (req, res) {
         }
     );
 });
+app.post('/createPlay', function (req, res) {
+    db.query(
+        `INSERT INTO play(player_id, game_id, type, finish, result, free_throw) VALUES (1, ${req.body.game_id}, '${req.body.type}', '${req.body.finish}', '${req.body.result}', '${req.body.free_throw}')`,
+        function (err, rows, fields) {
+            console.log(req.body);
+            if (err) {
+                error_msg = err.code + ": Server Error";
+                console.log(error_msg);
+                return res.send({ message: error_msg });
+            };
+            success_msg = "Created play successfully ";
+            return res.send({ message: success_msg });
+        }
+    )
+});

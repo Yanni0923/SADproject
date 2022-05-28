@@ -8,6 +8,9 @@ const PPPScreen = ({ navigation }) => {
     const problem_length = 5;
 
     const [allTeams, setAllTeams] = useState(data.teams);
+    var team_id = []
+    var game_id = []
+    var player_id = []
     const [allGames, setAllGames] = useState(data.games);
 
     const allPlayers = data.players;
@@ -22,6 +25,8 @@ const PPPScreen = ({ navigation }) => {
     const [targetTeam, setTargetTeam] = useState(null);
     const [targetGame, setTargetGame] = useState(null);
     const [targetPlayer, setTargetPlayer] = useState(null);
+    const [targetGameId, setTargetGameId] = useState(null);
+    const [targetPlayerId, setTargetPlayerId] = useState(null);
     const [targetPlayType, setTargetPlayType] = useState(null);
     const [targetFinish, setTargetFinish] = useState(null);
     const [targetResult, setTargetResult] = useState(null);
@@ -35,19 +40,24 @@ const PPPScreen = ({ navigation }) => {
     // 只要有選項被點下去，就會執行這個
     // 選項點下去的部分寫在 renderQuestion()
     // 所以 validateAnswer 和 renderQuestion() 是綁在一起的
+    const [start, setStart] = useState(true);
     const getTeamsList = (() => {
-        // Get team data
-        axios.get('http://localhost:7777/getTeams')
-            .then((response) => {
-                const teamList = response.data['data'];
-                const id = response.data['id'];
-                console.log(teamList);
-                setAllTeams(teamList);
-                console.log(allTeams);
-                // some mysterious issues here...
-            })
-            .catch((error) => { console.error(error) })
+        if (start === true){
+            setStart(false)
+            axios.get('http://localhost:7777/getTeams')
+                .then((response) => {
+                    const teamList = response.data['data'];
+                    team_id  = response.data['id'];
+                    console.log(teamList);
+                    setAllTeams(teamList);
+                    console.log(allTeams);
+                    // some mysterious issues here...
+                })
+                .catch((error) => { console.error(error) })
+            
+        }
     });
+    
     const getGamesList = ((team) => {
         axios
             .post
@@ -56,7 +66,7 @@ const PPPScreen = ({ navigation }) => {
             })
             .then((response) => {
                 const gameList = response.data['games'];
-                const id = response.data['id'];
+                game_id = response.data['id'];
                 console.log(gameList);
                 setAllGames(gameList);
                 
@@ -72,7 +82,7 @@ const PPPScreen = ({ navigation }) => {
             })
             .then((response) => {
                 const playerList = response.data['players'];
-                const id = response.data['id'];
+                player_id = response.data['id'];
                 console.log(playerList);
                 setPlayers(playerList);
                 
@@ -80,16 +90,43 @@ const PPPScreen = ({ navigation }) => {
             })
             .catch((error) => { console.error(error) })
     });
+    const createPlay = ((target) => {
+        axios
+            .post
+            ('http://localhost:7777/createPlay', {
+                
+                player_id : targetPlayerId+1, 
+                game_id : targetGameId+1, 
+                type : target[3], 
+                finish : target[4], 
+                result : target[5], 
+                free_throw : target[6],
+            })
+            .then((res) => {
+                console.log(res.data['message']);
+                
+                // some mysterious issues here...
+            })
+            .catch((error) => { console.error(error) })
+    });
     // 我要把這裡改成「顯示」&「把 Team 紀錄到資料庫」
-    const validateSelected = (selectedOption) => {
+    const validateSelected = (selectedOption, index) => {
+
         console.log(selectedOption);
         if (currentQuestionIndex == 0) { 
             setTargetTeam(selectedOption); 
             getPlayersList(selectedOption);
             getGamesList(selectedOption);
+            
         }
-        if (currentQuestionIndex == 1) { setTargetGame(selectedOption); }
-        if (currentQuestionIndex == 2) { setTargetPlayer(selectedOption); }
+        if (currentQuestionIndex == 1) { 
+            setTargetGame(selectedOption); 
+            setTargetGameId(index);
+        }
+        if (currentQuestionIndex == 2) { 
+            setTargetPlayer(selectedOption); 
+            setTargetPlayerId(index);
+        }
 
         if (currentQuestionIndex == 3) {
             setTargetPlayType(selectedOption);
@@ -127,6 +164,7 @@ const PPPScreen = ({ navigation }) => {
 
     // 重新開始下一次測驗
     const addGame = () => {
+        createPlay(target);
         setShowScoreModal(false);                          // 把 ScoreModal 那個彈出來的東西關掉
         setCurrentQuestionIndex(0);                        // 重置題號
         setFoulPossible(1);
@@ -134,6 +172,7 @@ const PPPScreen = ({ navigation }) => {
         setShowNextButton(false);                          // 把 Next Button 關起來
     }
     const addPlay = () => {
+        createPlay(target);
         setShowScoreModal(false);                          // 把 ScoreModal 那個彈出來的東西關掉
         setCurrentQuestionIndex(2);                        // 重置題號
         setFoulPossible(1);
@@ -155,15 +194,26 @@ const PPPScreen = ({ navigation }) => {
 
                     </View>
                     <View style={{
+
                         flexDirection: 'row',
-                        // alignItems: 'flex-end',
-                        alignSelf : 'center'
+                        alignItems: 'flex-end',
+                        alignSelf : 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap'
                     }}>
-                        <View >
+                        <View style={{
+                            width: 400,
+                            flexDirection: 'row',
+                            // alignItems: 'flex-end',
+                            alignSelf : 'center',
+                            // justifyContent: 'space-between',
+                            flexWrap: 'wrap'
+                        }}>
                         {
-                        question[currentQuestionIndex].slice(0,Math.ceil(question[currentQuestionIndex].length/2)).map(option => (
+                        question[currentQuestionIndex].map((option, index) => (
+                            <View >
                                 <TouchableOpacity
-                                onPress={() => validateSelected(option)}
+                                onPress={() => validateSelected(option, index)}
                                 key={option}
                                     style={{
                                         borderWidth: 3,
@@ -187,43 +237,14 @@ const PPPScreen = ({ navigation }) => {
                                     {/* Show Check Or Cross Icon based on correct answer*/}
         
                                 </TouchableOpacity>
+                            </View >
                             ))
                         }
         
         
         
                         </View>
-                        <View >
-                        {
-                        question[currentQuestionIndex].slice(Math.ceil(question[currentQuestionIndex].length/2), question[currentQuestionIndex].length).map(option => (
-                                <TouchableOpacity
-                                onPress={() => validateSelected(option)}
-                                key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        width: 180,
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10,
-                                        marginHorizontal: 10,
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white, alignSelf : 'center'}}>{option}</Text>
-        
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-        
-                                </TouchableOpacity>
-                            ))
-                        }
-                        </View>
+
                     </View>
                 </ScrollView>
 
@@ -240,7 +261,8 @@ const PPPScreen = ({ navigation }) => {
             // Show Score Modal
             setShowScoreModal(true);
         } else {
-            getTeamsList();
+            getTeamsList(false);
+            // console.log('hi');
             setCurrentQuestionIndex(currentQuestionIndex + 1); // 往後一題，題號 + 1 // 設定前三頁為基本資訊
             setCurrentOptionSelected(null);                    // 把點選的選項都清掉
             setShowNextButton(false);                          // 把 Next Button 關起來
@@ -273,10 +295,6 @@ const PPPScreen = ({ navigation }) => {
 
     // 紀錄進行到第幾題的動態 ProgressBar
     const [progress, setProgress] = useState(new Animated.Value(0));
-    const progressAnim = progress.interpolate({
-        inputRange: [0, question.length],
-        outputRange: ['0%', '100%']
-    })
 
     const renderProgressBar = () => {
         return (
@@ -329,7 +347,7 @@ const PPPScreen = ({ navigation }) => {
                 backgroundColor: COLORS.background,
                 position: 'relative'
             }}>
-
+                {getTeamsList()}
                 {/* ProgressBar */}
                 {renderProgressBar()}
                 {renderSelectTeam()}

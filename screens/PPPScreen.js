@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, SafeAreaView, StatusBar, Image, TouchableOpacity, Modal, Animated, ScrollView } from 'react-native'
+import { View, Text, SafeAreaView, StatusBar, Image, TouchableOpacity, Modal, Animated, ScrollView, StyleSheet } from 'react-native'
 import { COLORS, SIZES } from "../constants";
 import * as data from '../data/QuizData.json';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
+import { textAlign } from "@mui/system";
 const PPPScreen = ({ navigation }) => {
     const problem_length = 5;
 
@@ -186,14 +187,6 @@ const PPPScreen = ({ navigation }) => {
             return (
                 <ScrollView>
                     <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end',
-                        alignSelf: 'center'
-                    }}>
-                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>{question_name[currentQuestionIndex]} </Text>
-
-                    </View>
-                    <View style={{
 
                         flexDirection: 'row',
                         alignItems: 'flex-end',
@@ -211,28 +204,41 @@ const PPPScreen = ({ navigation }) => {
                         }}>
                             {
                                 question[currentQuestionIndex].map((option, index) => (
-                                    <View >
+                                    <View>
                                         <TouchableOpacity
                                             onPress={() => validateSelected(option, index)}
                                             key={option}
                                             style={{
                                                 borderWidth: 3,
                                                 borderColor: option == currentOptionSelected
-                                                    ? COLORS.success
-                                                    : COLORS.secondary + "40",
+                                                    ? COLORS.success_border
+                                                    : COLORS.secondary_border,
                                                 backgroundColor: option == currentOptionSelected
-                                                    ? COLORS.success + "20"
-                                                    : COLORS.secondary + "20",
+                                                    ? COLORS.success
+                                                    : COLORS.secondary,
                                                 width: 180,
                                                 height: 60, borderRadius: 20,
                                                 flexDirection: 'row',
                                                 alignItems: 'center', justifyContent: 'space-between',
                                                 paddingHorizontal: 20,
+                                                // textAlign: 'center',
+                                                // alignSelf: 'center',
+                                                justifyContent: 'center',
                                                 marginVertical: 10,
                                                 marginHorizontal: 10,
                                             }}
                                         >
-                                            <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
+                                            {/* 選項按鈕的顏色 */}
+                                            <Text style={{
+                                                fontSize: 18,
+                                                color: option == currentOptionSelected
+                                                    ? COLORS.white  // 被選中文字就變白色
+                                                    : COLORS.coffee  // 原本文字是黑色
+                                                , fontWeight: 'bold',
+                                                // textAlign: 'center',
+                                                // alignItems: 'center',
+                                                // justifyContent: 'center'
+                                            }}>{option}</Text>
 
                                             {/* Show Check Or Cross Icon based on correct answer*/}
 
@@ -282,11 +288,16 @@ const PPPScreen = ({ navigation }) => {
                 <TouchableOpacity
                     onPress={handleNext}
                     style={{
-                        marginBottom: 100, marginTop: 20, width: '100%', backgroundColor: COLORS.accent, padding: 20, borderRadius: 5
+                        marginBottom: 110,
+                        marginTop: 20,
+                        width: '100%',
+                        backgroundColor: 'lightsalmon',
+                        padding: 20,
+                        borderRadius: 25
                     }}
                 >
-                    <Text style={{ fontSize: 20, color: COLORS.white, textAlign: 'center' }}>Next</Text>
-                </TouchableOpacity>
+                    <Text style={{ fontSize: 25, color: COLORS.white, textAlign: 'center', fontWeight: 'bold' }}>Next</Text>
+                </TouchableOpacity >
             )
         } else {
             return null
@@ -300,8 +311,10 @@ const PPPScreen = ({ navigation }) => {
         return (
             <View style={{
                 flexDirection: 'row',
+                flexWrap: 'wrap',
                 alignItems: 'flex-end',
-                alignSelf: 'center'
+                alignSelf: 'center',
+                justifyContent: 'center',
             }}>
                 {
                     target.slice(0, currentQuestionIndex).map((option, index) => (
@@ -320,7 +333,7 @@ const PPPScreen = ({ navigation }) => {
                                 marginVertical: 10
                             }}
                         >
-                            <Text style={{ fontSize: 10, color: COLORS.white }}>{option}</Text>
+                            <Text style={{ fontSize: 10, color: COLORS.button, fontWeight: 'bold' }}>{option}</Text>
 
                             {/* Show Check Or Cross Icon based on correct answer*/}
 
@@ -342,11 +355,23 @@ const PPPScreen = ({ navigation }) => {
             <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
             <View style={{
                 flex: 1,
-                paddingVertical: 40,
+                paddingVertical: 20,
                 paddingHorizontal: 16,
                 backgroundColor: COLORS.background,
                 position: 'relative'
             }}>
+                <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-end',
+                    alignSelf: 'center',
+                    padding: 10,
+                    backgroundColor: '#f4f4f4'
+                    // paddingBottom: 80,
+                    // marginTop: 40
+                }}>
+                    <Text style={{ color: COLORS.black, fontSize: 30, fontWeight: 'bold' }}>{question_name[currentQuestionIndex]} </Text>
+
+                </View>
                 {getTeamsList()}
                 {/* ProgressBar */}
                 {renderProgressBar()}
@@ -362,21 +387,27 @@ const PPPScreen = ({ navigation }) => {
                 >
                     <View style={{
                         flex: 1,
-                        backgroundColor: COLORS.primary,
+                        backgroundColor: '#f4f4f4',         // 最底層灰
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        // alignSelf: 'center',         // 不能加
+
                     }}>
                         <View style={{
-                            backgroundColor: COLORS.white,
+                            backgroundColor: '#f4f4f4',     // 倒數第二最底層灰
                             width: '90%',
                             borderRadius: 20,
                             padding: 20,
-                            alignItems: 'center'
+                            // alignItems: 'center', // 不能加
+                            justifyContent: 'center',
+                            alignSelf: 'center',
                         }}>
+                            <Text style={{ color: COLORS.black, fontSize: 30, fontWeight: 'bold', textAlign: 'center' }}>新增成功</Text>
                             <View style={{
-                                flexDirection: 'row',
-                                alignItems: 'flex-end',
-                                alignSelf: 'center'
+                                // flexDirection: 'row',
+                                // alignItems: 'flex-end',
+                                // alignSelf: 'center',
+
                             }}>
                                 {
                                     target.map((option, index) => (
@@ -385,17 +416,22 @@ const PPPScreen = ({ navigation }) => {
                                             key={option}
                                             style={{
                                                 borderWidth: 3,
-                                                borderColor: COLORS.result + "20",
-                                                backgroundColor: COLORS.result,
+                                                borderColor: COLORS.button,
+                                                backgroundColor: COLORS.button + "20",
                                                 height: 60, borderRadius: 20,
-                                                flexDirection: 'row',
-                                                alignItems: 'center', justifyContent: 'space-between',
+                                                width: "100%",
+                                                // flexDirection: 'row',
+                                                // alignItems: 'center',
                                                 paddingHorizontal: 0,
                                                 marginHorizontal: 0,
-                                                marginVertical: 10
+                                                marginVertical: 10,
+                                                textAlign: 'center',
+                                                justifyContent: 'center'
+
                                             }}
                                         >
-                                            <Text style={{ fontSize: 10, color: COLORS.black }}>{option}</Text>
+                                            {/* 最後結果顯示 */}
+                                            <Text style={{ fontSize: 20, color: COLORS.button, fontWeight: 'bold', textAlign: 'center', justifyContent: 'center' }}>{option}</Text>
 
                                             {/* Show Check Or Cross Icon based on correct answer*/}
 
@@ -411,26 +447,27 @@ const PPPScreen = ({ navigation }) => {
                             <TouchableOpacity
                                 onPress={addGame}
                                 style={{
-                                    backgroundColor: COLORS.accent,
+                                    backgroundColor: 'lightsalmon',
                                     marginTop: 40,
                                     padding: 20, width: '100%', borderRadius: 20
                                 }}
                             >
                                 <Text style={{
-                                    textAlign: 'center', color: COLORS.white, fontSize: 20
-                                }}>Add Another Game</Text>
+                                    textAlign: 'center', color: COLORS.white, fontSize: 20, fontWeight: 'bold'
+                                }}>新增另一項 Game 紀錄</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={addPlay}
                                 style={{
-                                    backgroundColor: COLORS.accent,
-                                    marginTop: 40,
+                                    backgroundColor: 'lightsalmon',
+                                    marginTop: 20,
+                                    marginBottom: 40,
                                     padding: 20, width: '100%', borderRadius: 20
                                 }}
                             >
                                 <Text style={{
-                                    textAlign: 'center', color: COLORS.white, fontSize: 20
-                                }}>Add Another  Play</Text>
+                                    textAlign: 'center', color: COLORS.white, fontSize: 20, fontWeight: 'bold'
+                                }}>新增另一項 Play 紀錄</Text>
                             </TouchableOpacity>
 
 
@@ -461,3 +498,13 @@ const PPPScreen = ({ navigation }) => {
 }
 
 export default PPPScreen;
+
+const styles = StyleSheet.create({
+    nextButton: {
+        alignSelf: 'center',
+        width: '64%',
+        padding: 10,
+        backgroundColor: "lightsalmon",
+        borderRadius: 25
+    }
+});

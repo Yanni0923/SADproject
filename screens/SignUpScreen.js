@@ -131,7 +131,7 @@ const SignUpScreen = ({ navigation }) => {
                 })
                 .then((res) => {
                     // navigate("/signin");
-                    alert("資料庫");
+                    // alert("資料庫");
                     setSignUpState(res.data['message']);
 
                     if (res.data['message'] == 'REGISTER_SUCCESSFULLY') {

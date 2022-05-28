@@ -388,14 +388,14 @@ const styles = StyleSheet.create({
     },
     footer: {
         flex: 3,
-        backgroundColor: '#fff',
+        backgroundColor: '#ffffff',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         paddingHorizontal: 20,
         paddingVertical: 30
     },
     text_header: {
-        color: '#fff',
+        color: '#ffffff',
         fontWeight: 'bold',
         fontSize: '300%'
     },

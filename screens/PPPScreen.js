@@ -42,34 +42,34 @@ const PPPScreen = ({ navigation }) => {
     // 所以 validateAnswer 和 renderQuestion() 是綁在一起的
     const [start, setStart] = useState(true);
     const getTeamsList = (() => {
-        if (start === true){
+        if (start === true) {
             setStart(false)
             axios.get('http://localhost:7777/getTeams')
                 .then((response) => {
                     const teamList = response.data['data'];
-                    team_id  = response.data['id'];
+                    team_id = response.data['id'];
                     console.log(teamList);
                     setAllTeams(teamList);
                     console.log(allTeams);
                     // some mysterious issues here...
                 })
                 .catch((error) => { console.error(error) })
-            
+
         }
     });
-    
+
     const getGamesList = ((team) => {
         axios
             .post
             ('http://localhost:7777/getGamesByTeam', {
-                teamName:team,
+                teamName: team,
             })
             .then((response) => {
                 const gameList = response.data['games'];
                 game_id = response.data['id'];
                 console.log(gameList);
                 setAllGames(gameList);
-                
+
                 // some mysterious issues here...
             })
             .catch((error) => { console.error(error) })
@@ -78,14 +78,14 @@ const PPPScreen = ({ navigation }) => {
         axios
             .post
             ('http://localhost:7777/getPlayersByTeam', {
-                teamName:team,
+                teamName: team,
             })
             .then((response) => {
                 const playerList = response.data['players'];
                 player_id = response.data['id'];
                 console.log(playerList);
                 setPlayers(playerList);
-                
+
                 // some mysterious issues here...
             })
             .catch((error) => { console.error(error) })
@@ -94,17 +94,17 @@ const PPPScreen = ({ navigation }) => {
         axios
             .post
             ('http://localhost:7777/createPlay', {
-                
-                player_id : targetPlayerId+1, 
-                game_id : targetGameId+1, 
-                type : target[3], 
-                finish : target[4], 
-                result : target[5], 
-                free_throw : target[6],
+
+                player_id: targetPlayerId + 1,
+                game_id: targetGameId + 1,
+                type: target[3],
+                finish: target[4],
+                result: target[5],
+                free_throw: target[6],
             })
             .then((res) => {
                 console.log(res.data['message']);
-                
+
                 // some mysterious issues here...
             })
             .catch((error) => { console.error(error) })
@@ -113,18 +113,18 @@ const PPPScreen = ({ navigation }) => {
     const validateSelected = (selectedOption, index) => {
 
         console.log(selectedOption);
-        if (currentQuestionIndex == 0) { 
-            setTargetTeam(selectedOption); 
+        if (currentQuestionIndex == 0) {
+            setTargetTeam(selectedOption);
             getPlayersList(selectedOption);
             getGamesList(selectedOption);
-            
+
         }
-        if (currentQuestionIndex == 1) { 
-            setTargetGame(selectedOption); 
+        if (currentQuestionIndex == 1) {
+            setTargetGame(selectedOption);
             setTargetGameId(index);
         }
-        if (currentQuestionIndex == 2) { 
-            setTargetPlayer(selectedOption); 
+        if (currentQuestionIndex == 2) {
+            setTargetPlayer(selectedOption);
             setTargetPlayerId(index);
         }
 
@@ -186,18 +186,18 @@ const PPPScreen = ({ navigation }) => {
             return (
                 <ScrollView>
                     <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'flex-end',
-                    alignSelf : 'center'
+                        flexDirection: 'row',
+                        alignItems: 'flex-end',
+                        alignSelf: 'center'
                     }}>
-                    <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>{question_name[currentQuestionIndex]} </Text>
+                        <Text style={{ color: COLORS.white, fontSize: 20, opacity: 0.6 }}>{question_name[currentQuestionIndex]} </Text>
 
                     </View>
                     <View style={{
 
                         flexDirection: 'row',
                         alignItems: 'flex-end',
-                        alignSelf : 'center',
+                        alignSelf: 'center',
                         justifyContent: 'space-between',
                         flexWrap: 'wrap'
                     }}>
@@ -205,44 +205,44 @@ const PPPScreen = ({ navigation }) => {
                             width: 400,
                             flexDirection: 'row',
                             // alignItems: 'flex-end',
-                            alignSelf : 'center',
+                            alignSelf: 'center',
                             // justifyContent: 'space-between',
                             flexWrap: 'wrap'
                         }}>
-                        {
-                        question[currentQuestionIndex].map((option, index) => (
-                            <View >
-                                <TouchableOpacity
-                                onPress={() => validateSelected(option, index)}
-                                key={option}
-                                    style={{
-                                        borderWidth: 3,
-                                        borderColor: option == currentOptionSelected
-                                            ? COLORS.success
-                                            : COLORS.secondary + "40",
-                                        backgroundColor: option == currentOptionSelected
-                                            ? COLORS.success + "20"
-                                            : COLORS.secondary + "20",
-                                        width: 180,
-                                        height: 60, borderRadius: 20,
-                                        flexDirection: 'row',
-                                        alignItems: 'center', justifyContent: 'space-between',
-                                        paddingHorizontal: 20,
-                                        marginVertical: 10,
-                                        marginHorizontal: 10,
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
-        
-                                    {/* Show Check Or Cross Icon based on correct answer*/}
-        
-                                </TouchableOpacity>
-                            </View >
-                            ))
-                        }
-        
-        
-        
+                            {
+                                question[currentQuestionIndex].map((option, index) => (
+                                    <View >
+                                        <TouchableOpacity
+                                            onPress={() => validateSelected(option, index)}
+                                            key={option}
+                                            style={{
+                                                borderWidth: 3,
+                                                borderColor: option == currentOptionSelected
+                                                    ? COLORS.success
+                                                    : COLORS.secondary + "40",
+                                                backgroundColor: option == currentOptionSelected
+                                                    ? COLORS.success + "20"
+                                                    : COLORS.secondary + "20",
+                                                width: 180,
+                                                height: 60, borderRadius: 20,
+                                                flexDirection: 'row',
+                                                alignItems: 'center', justifyContent: 'space-between',
+                                                paddingHorizontal: 20,
+                                                marginVertical: 10,
+                                                marginHorizontal: 10,
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 20, color: COLORS.white }}>{option}</Text>
+
+                                            {/* Show Check Or Cross Icon based on correct answer*/}
+
+                                        </TouchableOpacity>
+                                    </View >
+                                ))
+                            }
+
+
+
                         </View>
 
                     </View>
@@ -301,10 +301,10 @@ const PPPScreen = ({ navigation }) => {
             <View style={{
                 flexDirection: 'row',
                 alignItems: 'flex-end',
-                alignSelf : 'center'
+                alignSelf: 'center'
             }}>
                 {
-                target.slice(0,currentQuestionIndex ).map((option, index) => (
+                    target.slice(0, currentQuestionIndex).map((option, index) => (
                         <TouchableOpacity
                             onPress={() => setCurrentQuestionIndex(index)}
                             key={option}
@@ -376,10 +376,10 @@ const PPPScreen = ({ navigation }) => {
                             <View style={{
                                 flexDirection: 'row',
                                 alignItems: 'flex-end',
-                                alignSelf : 'center'
+                                alignSelf: 'center'
                             }}>
                                 {
-                                target.map((option, index) => (
+                                    target.map((option, index) => (
                                         <TouchableOpacity
                                             onPress={() => setCurrentQuestionIndex(index)}
                                             key={option}

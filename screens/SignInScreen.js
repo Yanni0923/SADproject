@@ -30,7 +30,7 @@ const SignInScreen = ({ navigation }) => {
     const db = require('../server/config/db');
     // const app = express();
     // 
-
+    const [signInState, setSignInState] = React.useState('###########');
     const Users = users.Users;
     const [data, setData] = React.useState({
         username: '',
@@ -108,7 +108,7 @@ const SignInScreen = ({ navigation }) => {
     const [password, setPassword] = useState("");
 
     const login = (username, password) => {
-        if (username !== "" && password !== "") {
+        if (username.length >= 4 && password.length >= 8) {
             axios
                 .post("http://localhost:7777/signin", {
                     username: username,
@@ -116,22 +116,28 @@ const SignInScreen = ({ navigation }) => {
                 })
                 .then((res) => {
                     if (res.data['message'] == 'LOGIN_SUCCESSFULLY') {
-                        alert("登入成功!");
-                        // navigate("/home");
+                        setSignInState(() => '歡迎使用者' + username + '登入成功！');
                     }
                     else if (res.data['message'] == 'ACCOUNT_NOT_EXIST') {
-                        alert("帳號或密碼錯誤!");
+                        setSignInState(() => '此使用者名稱與密碼不存在！');
                     }
                 })
                 .catch((e) => {
                     if (e.response.error) {
-                        alert("port 7000：伺服器連線錯誤！");
+                        alert("port 7777：伺服器連線錯誤！");
                     }
                 });
-        } else if (username === "") {
-            alert("請輸入帳號!");
-        } else {
-            alert("請輸入密碼!");
+        } // 會進來資料庫的話要確保以下幾點
+        else if (username === "") {
+            // alert("請輸入!");
+            setSignInState(() => '請輸入使用者名稱 Username！');
+        } else if (username.length < 4) {
+            setSignInState(() => "使用者名稱 Username 長度不足！");
+        } else if (password === "") {
+            // alert("請輸入密碼 Password!");
+            setSignInState(() => "請輸入密碼 Password！");
+        } else if (password.length < 8) {
+            setSignInState(() => "密碼 Password 長度不足！");
         }
     };
     const loginHandle = (userName, password) => {
@@ -178,9 +184,9 @@ const SignInScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor='#009387' barStyle="light-content" />
+            <StatusBar backgroundColor='lightsalmon' barStyle="light-content" />
             <View style={styles.header}>
-                <Text style={styles.text_header}>Welcome!</Text>
+                <Text style={styles.text_header}>登入</Text>
             </View>
             <Animatable.View
                 animation="fadeInUpBig"
@@ -190,16 +196,17 @@ const SignInScreen = ({ navigation }) => {
             >
                 <Text style={[styles.text_footer, {
                     color: colors.text
-                }]}>Username</Text>
+                }]}>使用者名稱 Username</Text>
                 <View style={styles.action}>
                     <FontAwesome
                         name="user-o"
                         color={colors.text}
-                        size={20}
+                        size={25}
+                        style={{ paddingTop: 10, paddingRight: 10 }}
                     />
                     <TextInput
                         placeholder="Your Username"
-                        placeholderTextColor="#666666"
+                        placeholderTextColor="#AAAAAA"
                         style={[styles.textInput, {
                             color: colors.text
                         }]}
@@ -214,14 +221,15 @@ const SignInScreen = ({ navigation }) => {
                             <Feather
                                 name="check-circle"
                                 color="green"
-                                size={20}
+                                size={25}
+                                style={{ paddingTop: 10, paddingLeft: 10 }}
                             />
                         </Animatable.View>
                         : null}
                 </View>
                 {data.isValidUser ? null :
                     <Animatable.View animation="fadeInLeft" duration={500}>
-                        <Text style={styles.errorMsg}>Username must be 4 characters long.</Text>
+                        <Text style={styles.errorMsg}>使用者名稱 Username 需要至少 4 個字元</Text>
                     </Animatable.View>
                 }
 
@@ -229,16 +237,17 @@ const SignInScreen = ({ navigation }) => {
                 <Text style={[styles.text_footer, {
                     color: colors.text,
                     marginTop: 35
-                }]}>Password</Text>
+                }]}>密碼 Password</Text>
                 <View style={styles.action}>
                     <Feather
                         name="lock"
                         color={colors.text}
-                        size={20}
+                        size={25}
+                        style={{ paddingTop: 10, paddingRight: 10 }}
                     />
                     <TextInput
                         placeholder="Your Password"
-                        placeholderTextColor="#666666"
+                        placeholderTextColor="#AAAAAA"
                         secureTextEntry={data.secureTextEntry ? true : false}
                         style={[styles.textInput, {
                             color: colors.text
@@ -253,53 +262,60 @@ const SignInScreen = ({ navigation }) => {
                             <Feather
                                 name="eye-off"
                                 color="grey"
-                                size={20}
+                                size={25}
+                                style={{ paddingTop: 10, paddingLeft: 10 }}
                             />
                             :
                             <Feather
                                 name="eye"
                                 color="grey"
-                                size={20}
+                                size={25}
+                                style={{ paddingTop: 10, paddingLeft: 10 }}
                             />
                         }
                     </TouchableOpacity>
                 </View>
                 {data.isValidPassword ? null :
                     <Animatable.View animation="fadeInLeft" duration={500}>
-                        <Text style={styles.errorMsg}>Password must be 8 characters long.</Text>
+                        <Text style={styles.errorMsg}>密碼 Password 需要至少 8 個字元</Text>
                     </Animatable.View>
                 }
 
 
                 <TouchableOpacity>
-                    <Text style={{ color: '#009387', marginTop: 15 }}>Forgot password?</Text>
+                    <Text style={{ color: 'lightsalmon', marginTop: 15 }}>忘記密碼？</Text>
                 </TouchableOpacity>
+
+
+                {/* 註冊成功與否 */}
+                <Text style={styles.messageSuccess}>{signInState}</Text>
+
                 <View style={styles.button}>
                     <TouchableOpacity
                         style={styles.signIn}
                         onPress={() => { login(data.username, data.password) }}
                     >
                         <LinearGradient
-                            colors={['#08d4c4', '#01ab9d']}
+                            colors={['lightsalmon', 'lightsalmon']}
                             style={styles.signIn}
                         >
                             <Text style={[styles.textSign, {
                                 color: '#fff'
-                            }]}>Sign In</Text>
+                            }]}>登入</Text>
                         </LinearGradient>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => navigation.navigate('SignUp')}
                         style={[styles.signIn, {
-                            borderColor: '#009387',
-                            borderWidth: 1,
+                            borderColor: 'lightsalmon',
+                            borderWidth: 3,
                             marginTop: 15
                         }]}
                     >
                         <Text style={[styles.textSign, {
-                            color: '#009387'
-                        }]}>Sign Up</Text>
+                            color: 'lightsalmon'
+                        }]}>切換至註冊</Text>
                     </TouchableOpacity>
                 </View>
             </Animatable.View>
@@ -362,7 +378,7 @@ export default SignInScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#009387'
+        backgroundColor: 'lightsalmon'
     },
     header: {
         flex: 1,
@@ -381,10 +397,10 @@ const styles = StyleSheet.create({
     text_header: {
         color: '#fff',
         fontWeight: 'bold',
-        fontSize: 30
+        fontSize: '300%'
     },
     text_footer: {
-        color: '#05375a',
+        color: '#000000',
         fontSize: 18
     },
     action: {
@@ -401,14 +417,23 @@ const styles = StyleSheet.create({
         borderBottomColor: '#FF0000',
         paddingBottom: 5
     },
+    // textInput: {
+    //     flex: 1,
+    //     marginTop: Platform.OS === 'ios' ? 0 : -12,
+    //     paddingLeft: 10,
+    //     color: '#05375a',
+    // },
     textInput: {
-        flex: 1,
-        marginTop: Platform.OS === 'ios' ? 0 : -12,
-        paddingLeft: 10,
-        color: '#05375a',
+        // size
+        width: '80%',
+        padding: 10,
+        marginBottom: 3,
+        // style
+        fontSize: '100%',
+        borderBottomWidth: 2,
     },
     errorMsg: {
-        color: '#FF0000',
+        color: '#FF0000', // 紅色
         fontSize: 14,
     },
     button: {
@@ -423,7 +448,16 @@ const styles = StyleSheet.create({
         borderRadius: 10
     },
     textSign: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold'
-    }
+    },
+    messageSuccess: {
+        alignSelf: 'center',
+        fontWeight: 'bold',
+        paddingTop: 30,
+    },
+    messageError: {
+        color: 'red',
+        paddingTop: 3
+    },
 });

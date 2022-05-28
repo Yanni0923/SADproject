@@ -38,20 +38,21 @@ const SplashScreen = ({ navigation }) => {
             >
                 <Text style={[styles.title, {
                     color: colors.text
-                }]}>Stay connected with everyone!</Text>
-                <Text style={styles.text}>Sign in with account</Text>
+                }]}>臺大男籃{"\n"}對手情報蒐集系統</Text>
+                <Text style={styles.text}>歡迎使用！SADFighting！</Text>
                 <View style={styles.button}>
-                    <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+                    <TouchableOpacity onPress={() => navigation.navigate('SignIn')}
+                        style={{ width: '200', height: '500' }}>
                         <LinearGradient
-                            colors={['#08d4c4', '#01ab9d']}
+                            colors={['lightsalmon', 'lightsalmon']} //firebrick
                             style={styles.signIn}
                         >
-                            <Text style={styles.textSign}>Get Started</Text>
-                            <MaterialIcons
+                            <Text style={styles.textSign}>登入／註冊</Text>
+                            {/* <MaterialIcons
                                 name="navigate-next"
                                 color="#fff"
-                                size={20}
-                            />
+                                size={40}
+                            /> */}
                         </LinearGradient>
                     </TouchableOpacity>
                 </View>
@@ -68,7 +69,7 @@ const height_logo = height * 0.28;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#009387'
+        backgroundColor: 'lightsalmon'
     },
     header: {
         flex: 2,
@@ -81,6 +82,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         paddingVertical: 50,
+        paddingBottom: 200,
         paddingHorizontal: 30
     },
     logo: {
@@ -90,7 +92,7 @@ const styles = StyleSheet.create({
     },
     title: {
         color: '#05375a',
-        fontSize: 30,
+        fontSize: 40,
         fontWeight: 'bold'
     },
     text: {
@@ -98,18 +100,28 @@ const styles = StyleSheet.create({
         marginTop: 5
     },
     button: {
-        alignItems: 'flex-end',
+        // flex: 1,
+        alignItems: 'center',
+
+        // paddingBottom: 0,
+        // marginBottom: 150,
+        // width: 300,
+        // height: 200,
         marginTop: 30
     },
     signIn: {
-        width: 150,
-        height: 40,
+        // width: '200%',
+        // height: '200%',
+        padding: 20,
+        margin: 20,
+        paddingHorizontal: 30,  // 按鈕寬度
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 50,
+        borderRadius: 30,
         flexDirection: 'row'
     },
     textSign: {
+        fontSize: '150%',  // 文字大小
         color: 'white',
         fontWeight: 'bold'
     }

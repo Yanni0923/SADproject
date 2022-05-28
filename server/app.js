@@ -17,7 +17,7 @@ app.listen(port, () => {
 // - - foreign key: id required
 // - - date format
 
-const getList = ((rows, cname, ) => {
+const getList = ((rows, cname,) => {
     // get list of values of a column from RowDataPacket
     obj = JSON.parse(JSON.stringify(rows));
     values = [];
@@ -27,36 +27,69 @@ const getList = ((rows, cname, ) => {
     return values;
 });
 
+app.get('/getTeamsWithId', (request, response) => {
+    db.query(
+        `SELECT * FROM team`,
+        function (err, rows) {
+            teams = getMultiList(rows, ['team_id', 'name']);
+            console.log(teams);
+            if (rows.length === 0) {
+                console.log('No teams found.')
+            }
+            if (err) {
+                error_msg = err.code + ": Server Error";
+                console.log(error_msg);
+                return response.send({ message: error_msg });
+            };
+            id = teams.map(function (element) {
+                return element[0];
+            });
+            teamName = teams.map(function (element) {
+                return element[1];
+            });
+            return response.send({ id: id, teamName: teamName });
+        }
+    )
+});
 
 app.post("/signin", function (req, res) {
     const { username, password } = req.body;
-    db.query(
-        `SELECT * FROM account WHERE username='${username}' AND password='${password}'`,
-        function (err, rows, fields) {
-            console.log(getList(rows, 'username'));
-            if (rows.length === 0) {
-                console.log('ACCOUNT_NOT_EXIST');
-                return res.send({ message: 'ACCOUNT_NOT_EXIST' });
-            };
-            console.log('LOGIN_SUCCESSFULLY');
-            return res.send({ message: 'LOGIN_SUCCESSFULLY' });
-        }
-    );
+    if (username != "" && password != "") {
+        db.query(
+            `SELECT * FROM account WHERE username='${username}' AND password='${password}'`,
+            function (err, rows, fields) {
+                console.log(getList(rows, 'username'));
+                if (rows.length === 0) {
+                    console.log('ACCOUNT_NOT_EXIST');
+                    return res.send({ message: 'ACCOUNT_NOT_EXIST' });
+                };
+                console.log('LOGIN_SUCCESSFULLY');
+                return res.send({ message: 'LOGIN_SUCCESSFULLY' });
+            }
+        );
+    }
 });
 
 app.post("/signup", function (req, res) {
     const { username, password, confirm_password } = req.body;
-    db.query(
-        `INSERT INTO account(username, password) VALUES ('${username}', '${password}')`,
-        function (err, rows, fields) {
-            if (err) {
-                console.log(err.code);
-                return res.send({ message: "ACCOUNT_ALREADY_EXISTS" });
-            };
-            console.log("REGISTER_SUCCESSFULLY");
-            return res.send({ message: "REGISTER_SUCCESSFULLY" });
-        }
-    );
+    if (username != "" && password != "" && confirm_password != "") {
+        db.query(
+            `INSERT INTO account(username, password) VALUES ('${username}', '${password}')`,
+            function (err, rows, fields) {
+                if (err) {
+                    console.log(err.code);
+                    return res.send({ message: "ACCOUNT_ALREADY_EXISTS" });
+                };
+
+                if (password !== confirm_password) {
+                    return res.send({ message: "兩次密碼輸入不一致！" });
+                } else {
+                    console.log("REGISTER_SUCCESSFULLY");
+                    return res.send({ message: "REGISTER_SUCCESSFULLY" });
+                }
+            }
+        );
+    }
 });
 
 app.post('/createTeam', function (req, res) {
@@ -95,7 +128,7 @@ app.post('/createPlayer', function (req, res) {
     db.query(
         `INSERT INTO player( team, name, position, number, hand, height, weight) VALUES ('政治大學', '歐', 'C',23, 'right', 189, 90)`,
         function (err, rows, fields) {
-            console.log( team, name, position, number)
+            console.log(team, name, position, number)
             if (err) {
                 error_msg = err.code + ": Server Error";
                 console.log(error_msg);
@@ -122,7 +155,7 @@ app.get('/getTeams', (request, response) => {
                 console.log(error_msg);
                 return response.send({ message: error_msg });
             };
-            return response.send({ data: teams, id:id });
+            return response.send({ data: teams, id: id });
         }
     )
 });
@@ -143,7 +176,7 @@ app.post("/getPlayersByTeam", function (req, res) {
                 console.log(error_msg);
                 return response.send({ message: error_msg });
             };
-            return res.send({ players: players, id:id });
+            return res.send({ players: players, id: id });
         }
     );
 });
@@ -164,7 +197,7 @@ app.post("/getGamesByTeam", function (req, res) {
                 console.log(error_msg);
                 return response.send({ message: error_msg });
             };
-            return res.send({ games: games, id:id });
+            return res.send({ games: games, id: id });
         }
     );
 });
@@ -180,6 +213,38 @@ app.post('/createPlay', function (req, res) {
             };
             success_msg = "Created play successfully ";
             return res.send({ message: success_msg });
+        }
+    )
+});
+
+//  Query Modify Screen.js
+app.get('/getGamesQuery', (request, response) => {
+    db.query(
+        `SELECT * FROM game`,
+        function (err, rows) {
+            console.log(rows);
+            return response.send({ data: rows });
+        }
+    )
+});
+
+
+app.get('/getTeamsQuery', (request, response) => {
+    db.query(
+        `SELECT * FROM team`,
+        function (err, rows) {
+            console.log(rows);
+            return response.send({ data: rows });
+        }
+    )
+});
+
+app.get('/getPlayersQuery', (request, response) => {
+    db.query(
+        `SELECT * FROM player`,
+        function (err, rows) {
+            console.log(rows);
+            return response.send({ data: rows });
         }
     )
 });

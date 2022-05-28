@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { Component, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert,
+import {
+    View, Text, TextInput, TouchableOpacity, Alert,
     StyleSheet, Animated, TouchableHighlight, StatusBar
 } from 'react-native';
 import RNPickerSelect from "react-native-picker-select";
@@ -43,7 +44,7 @@ const CreateInfoScreen = ({ navigation }) => {
         axios.get('http://localhost:7777/getTeams')
             .then((response) => {
                 const teamList = response.data['data'];
-                const teams_updated = teamList.map((e) => {return { label: e, value: e }});
+                const teams_updated = teamList.map((e) => { return { label: e, value: e } });
                 console.log(teams_updated);
                 setTeams(teams_updated);
                 console.log(teams);
@@ -107,7 +108,7 @@ const CreateInfoScreen = ({ navigation }) => {
                         console.log(res.data['message']);
                         if (res.data['message'] == 'Created game') {
                             suffix = homeTeam + ' vs. ' + awayTeam;
-                            setMsgSuccess(() => '成功新增'+typeSelected+' '+suffix);
+                            setMsgSuccess(() => '成功新增' + typeSelected + ' ' + suffix);
                         }
                     })
                     .catch((e) => {
@@ -131,7 +132,7 @@ const CreateInfoScreen = ({ navigation }) => {
                         console.log(res.data['message']);
                         if (res.data['message'] == 'Created player: ' + name) {
                             suffix = name;
-                            setMsgSuccess(() => '成功新增'+typeSelected+' '+suffix);
+                            setMsgSuccess(() => '成功新增' + typeSelected + ' ' + suffix);
                         }
                     })
                     .catch((e) => {
@@ -149,19 +150,19 @@ const CreateInfoScreen = ({ navigation }) => {
         <View style={styles.container}>
             <View style={styles.tabbar}>
                 <TouchableOpacity
-                    style={styles.tab}
+                    style={styles.tab_team}
                     onPress={() => onSelect('球隊')}
                 >
                     <Text style={styles.tabtext}>新增{'\n'}球隊</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.tab}
+                    style={styles.tab_game}
                     onPress={() => onSelect('球賽')}
                 >
                     <Text style={styles.tabtext}>新增{'\n'}球賽</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.tab}
+                    style={styles.tab_player}
                     onPress={() => onSelect('球員')}
                 >
                     <Text style={styles.tabtext}>新增{'\n'}球員</Text>
@@ -170,7 +171,7 @@ const CreateInfoScreen = ({ navigation }) => {
             {
                 (typeSelected == '球隊') ? (
                     <View style={styles.container}>
-                        <Text style={styles.heading}>--  新增球隊  --</Text>
+                        <Text style={styles.heading}>####  新增球隊  ####</Text>
                         <Text style={styles.subheading}>球隊名稱</Text>
                         <View style={styles.input}>
                             <TextInput
@@ -178,6 +179,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 value={team}
                                 style={styles.textInput}
                                 placeholder="NTU Owls"
+                                placeholderTextColor="#AAAAAA"
                             />
                             {(team === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -188,6 +190,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 value={school}
                                 style={styles.textInput}
                                 placeholder="國立臺灣大學"
+                                placeholderTextColor="#AAAAAA"
                             />
                             {(school === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -198,6 +201,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 value={coach}
                                 style={styles.textInput}
                                 placeholder="Terry"
+                                placeholderTextColor="#AAAAAA"
                             />
                             {(coach === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -213,14 +217,15 @@ const CreateInfoScreen = ({ navigation }) => {
             {
                 (typeSelected == '球賽') ? (
                     <View style={styles.container}>
-                        <Text style={styles.heading}>--  新增球賽  --</Text>
+                        <Text style={styles.heading}>####  新增球賽  ####</Text>
                         <Text style={styles.subheading}>主隊名稱</Text>
                         <View style={styles.input}>
                             <RNPickerSelect
                                 placeholder={{ label: "選擇球隊", value: "" }}
+                                placeholderTextColor="#AAAAAA"
                                 style={pickerSelectStyles}
                                 onValueChange={(homeTeam) => setHomeTeam(homeTeam)}
-                                items={ teams }
+                                items={teams}
                             />
                             {(homeTeam === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -228,9 +233,10 @@ const CreateInfoScreen = ({ navigation }) => {
                         <View style={styles.input}>
                             <RNPickerSelect
                                 placeholder={{ label: "選擇球隊", value: "" }}
+                                placeholderTextColor="#AAAAAA"
                                 style={pickerSelectStyles}
                                 onValueChange={(awayTeam) => setAwayTeam(awayTeam)}
-                                items={ teams }
+                                items={teams}
                             />
                             {(awayTeam === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -241,6 +247,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 value={date}
                                 style={styles.textInput}
                                 placeholder="2022-05-18"
+                                placeholderTextColor="#AAAAAA"
                             />
                             {(date === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -256,14 +263,15 @@ const CreateInfoScreen = ({ navigation }) => {
             {
                 (typeSelected == '球員') ? (
                     <View style={styles.container}>
-                        <Text style={styles.heading}>--  新增球員  --</Text>
+                        <Text style={styles.heading}>####  新增球員  ####</Text>
                         <Text style={styles.subheading}>球隊名稱</Text>
                         <View style={styles.input}>
                             <RNPickerSelect
                                 placeholder={{ label: "選擇球隊", value: '' }}
+                                placeholderTextColor="#AAAAAA"
                                 style={pickerSelectStyles}
                                 onValueChange={(belongTeam) => setBelongTeam(belongTeam)}
-                                items={ teams }
+                                items={teams}
                             />
                             {(belongTeam === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -271,6 +279,7 @@ const CreateInfoScreen = ({ navigation }) => {
                         <View style={styles.input}>
                             <RNPickerSelect
                                 placeholder={{ label: "選擇位置", value: '' }}
+                                placeholderTextColor="#AAAAAA"
                                 style={pickerSelectStyles}
                                 onValueChange={(position) => setPosition(position)}
                                 items={[
@@ -290,6 +299,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 value={name}
                                 style={styles.textInput}
                                 placeholder="Adam Silver"
+                                placeholderTextColor="#AAAAAA"
                             />
                             {(name === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -300,6 +310,7 @@ const CreateInfoScreen = ({ navigation }) => {
                                 value={number}
                                 style={styles.textInput}
                                 placeholder="23"
+                                placeholderTextColor="#AAAAAA"
                             />
                             {(number === '') ? <Text style={styles.messageError}>{msgError}</Text> : <Text></Text>}
                         </View>
@@ -336,7 +347,7 @@ const styles = StyleSheet.create({
         paddingBottom: 30,
         // style
         fontSize: '200%',
-        fontWeight: 500
+        fontWeight: 'bold'
     },
     subheading: {
         // size
@@ -367,7 +378,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         width: '64%',
         padding: 10,
-        backgroundColor: "black",
+        backgroundColor: "lightsalmon",
         borderRadius: 25
     },
     btntext: {
@@ -389,18 +400,32 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         paddingTop: 20
     },
-    tab: {
+    tab_team: {
         display: 'flex',
-        width: '24%',
+        width: '27%',
         padding: 10,
-        backgroundColor: "grey",
+        backgroundColor: "#6699CC",
+        borderRadius: 12
+    },
+    tab_game: {
+        display: 'flex',
+        width: '27%',
+        padding: 10,
+        backgroundColor: "#FF6666",
+        borderRadius: 12
+    },
+    tab_player: {
+        display: 'flex',
+        width: '27%',
+        padding: 10,
+        backgroundColor: "#FFAA33",
         borderRadius: 12
     },
     tabtext: {
         alignSelf: 'center',
         color: 'white',
-        fontSize: 18,
-        fontWeight: 500,
+        fontSize: 20,
+        fontWeight: 'bold',
     }
 });
 

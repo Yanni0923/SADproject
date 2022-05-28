@@ -3,6 +3,7 @@ import { View, Text, StatusBar, Image, StyleSheet, TextInput, TouchableOpacity, 
 import { COLORS, SIZES } from "../constants";
 import { SearchBar } from 'react-native-elements';
 import { useTheme } from "@react-navigation/native";
+import { useFocusEffect } from '@react-navigation/native';
 
 import Swiper from 'react-native-swiper/src';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -20,26 +21,116 @@ import RNPickerSelect from 'react-native-picker-select';
 import * as data from '../data/QuizData.json';
 import { color, set } from "react-native-reanimated";
 
+// 讀取資料庫
+import axios from 'axios';
+import { render } from "react-dom";
+
 const QueryModifyScreen = ({ navigation }) => {
+
     const [search, setSearch] = useState('');
     const { colors } = useTheme();
     const theme = useTheme;
 
-    // 貼上滑動刪除 swipe delete 的內容
-    const oringin_datas = data.data;
+    // const [orinData, setOrinData] = useState(data.teams);
+    const [allTeams, setAllTeams] = useState(data.players);
 
-    // 刪除過的資料
+    // 讀入的初始化的次數只能夠有一次
+    const [importTeam, setImportTeam] = useState(false);
+    const [importGame, setImportGame] = useState(false);
+    const [importPlayer, setImportPlayer] = useState(false);
+
+    // 從資料庫讀取資料
+    const getTeamsJson = (() => {
+        // Get team data
+        console.log("importTeam", importTeam);
+        if (importTeam == false) {
+            axios.get('http://localhost:7777/getTeamsQuery')
+                .then((response) => {
+                    const teamData = response.data['data'];
+                    // setListData(response.data);
+                    console.log("getTeamsJson");
+                    console.log(teamData);
+                    // setImportTeam(true); // 紀錄 team 初始化的次數只能一次
+                    setAllTeams(teamData);
+                    setListData(teamData);
+                    setFilteredDataSource(teamData);
+                    setSearchData(teamData);
+                    setDisplayDataSource(teamData);
+                })
+                .catch((error) => { console.error(error) })
+        }
+    });
+
+    const getGamesJson = (() => {
+        // Get team data
+        console.log("importGame", importGame);
+        if (importGame == false) {
+            axios.get('http://localhost:7777/getGamesQuery')
+                .then((response) => {
+                    const gameData = response.data['data'];
+                    // setListData(response.data);
+                    console.log("getGamesJson");
+                    console.log(gameData);
+                    // setImportGame(true); // 紀錄 team 初始化的次數只能一次
+                    setAllTeams(gameData);
+                    setListData(gameData);
+                    setFilteredDataSource(gameData);
+                    setSearchData(gameData);
+                    setDisplayDataSource(gameData);
+                })
+                .catch((error) => { console.error(error) })
+        }
+    });
+
+    const getPlayersJson = (() => {
+        // Get team data
+        console.log("importPlayer", importPlayer);
+        if (importPlayer == false) {
+            axios.get('http://localhost:7777/getPlayersQuery')
+                .then((response) => {
+                    const playerData = response.data['data'];
+                    // setListData(response.data);
+                    console.log("getPlayersJson");
+                    console.log(playerData);
+                    // setImportPlayer(true); // 紀錄 team 初始化的次數只能一次
+                    setAllTeams(playerData);
+                    setListData(playerData);
+                    setFilteredDataSource(playerData);
+                    setSearchData(playerData);
+                    setDisplayDataSource(playerData);
+                })
+                .catch((error) => { console.error(error) })
+        }
+    });
+
+    // useFocusEffect(React.useCallback(() => {
+    //     getTeamsJson();
+    //     console.log('当前页面被激活啦!');
+    // }, []));
+
+    // 最原始的資料(會顯示修改、刪除結果)
     const [listData, setListData] = useState(
-        oringin_datas.map((NotificationItem, index) => ({
+        data.data.map((dataItem, index) => ({
             key: `${index}`,
-            question: NotificationItem.question,
-            options: NotificationItem.options,
-            correct_option: NotificationItem.correct_option,
-            type: NotificationItem.type
+            question: dataItem.question,
+            options: dataItem.options,
+            correct_option: dataItem.correct_option,
+            type: dataItem.type,
+            // question: dataItem.question,
+            // options: dataItem.options,
+            // correct_option: dataItem.correct_option,
+            // type: dataItem.type
         })),
     );
-    // 用來裝篩選結果的資料
+
+    // 用來裝篩選結果的資料(game, team, player)
     const [filteredDataSource, setFilteredDataSource] = useState(listData);
+
+    // 用來裝 search text 結果的資料
+    const [searchData, setSearchData] = useState(listData);
+
+    // 真正會 render 出來的資料
+    const [displayDataSource, setDisplayDataSource] = useState(listData);
 
     // 裝 toggleSwitch 開關
     const [isGameSelected, setIsGameSelected] = useState(false);
@@ -51,23 +142,63 @@ const QueryModifyScreen = ({ navigation }) => {
     const [isPlayerSelected, setIsPlayerSelected] = useState(false);
     // const toggleSwitch_Player = () => setIsPlayerSelected(previousState => !previousState);
 
-    // Pick select
-    const [selectedValue, setSelectedValue] = useState("java");
+
+
 
     const closeRow = (rowMap, rowKey) => {
+        console.log("rowMap:", rowMap);
+        console.log("rowKey:", rowKey);
         if (rowMap[rowKey]) {
             rowMap[rowKey].closeRow();
         }
         console.log("執行 closeRow()");
     };
     const deleteRow = (rowMap, rowKey) => {
-        closeRow(rowMap, rowKey);
-        const newData = [...listData];
-        const prevIndex = listData.findIndex(item => item.key === rowKey);
-        newData.splice(prevIndex, 1);
-        setListData(newData);
-        setFilteredDataSource(newData);
-        console.log("執行 deleteRow()");
+
+        if (isTeamSelected) {
+            closeRow(rowMap, rowKey);
+            const newData = [...listData];
+            const prevIndex = listData.findIndex(item => item.team_id === rowKey);
+            newData.splice(prevIndex, 1);
+            setListData(newData);
+
+            const newData_data = [...displayDataSource];
+            const prevIndex_data = listData.findIndex(item => item.team_id === rowKey);
+            newData_data.splice(prevIndex_data, 1);
+            setDisplayDataSource(newData_data);
+            // setFilteredDataSource(newData);
+            // setSearch
+            console.log("執行 deleteRow()");
+        } else if (isPlayerSelected) {
+            closeRow(rowMap, rowKey);
+            const newData = [...listData];
+            const prevIndex = listData.findIndex(item => item.player_id === rowKey);
+            newData.splice(prevIndex, 1);
+            setListData(newData);
+
+            const newData_data = [...displayDataSource];
+            const prevIndex_data = listData.findIndex(item => item.player_id === rowKey);
+            newData_data.splice(prevIndex_data, 1);
+            setDisplayDataSource(newData_data);
+            // setFilteredDataSource(newData);
+            // setSearch
+            console.log("執行 deleteRow()");
+        }
+        else if (isGameSelected) {
+            closeRow(rowMap, rowKey);
+            const newData = [...listData];
+            const prevIndex = listData.findIndex(item => item.game_id === rowKey);
+            newData.splice(prevIndex, 1);
+            setListData(newData);
+
+            const newData_data = [...displayDataSource];
+            const prevIndex_data = listData.findIndex(item => item.game_id === rowKey);
+            newData_data.splice(prevIndex_data, 1);
+            setDisplayDataSource(newData_data);
+            // setFilteredDataSource(newData);
+            // setSearch
+            console.log("執行 deleteRow()");
+        }
     };
 
     const onRowDidOpen = rowKey => {
@@ -91,7 +222,7 @@ const QueryModifyScreen = ({ navigation }) => {
     };
 
 
-    const VisibleItem = props => {
+    const VisibleItem_team = props => {
         const {
             data,
             rowHeightAnimatedValue,
@@ -128,11 +259,76 @@ const QueryModifyScreen = ({ navigation }) => {
                         </View>
                         <View style={styles.cardInfo}>
                             <Text numberOfLines={1}>
-                                {data.item.question}
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 球隊名稱：</Text>
+                                {data.item.name}
                                 {/* 之後這裡要改 */}
                             </Text>
                             <Text numberOfLines={1}>
-                                {data.item.options}
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 所屬學校／團體：</Text>
+                                {data.item.school}
+                                {/* 之後這裡要改 */}
+                            </Text>
+                            <Text numberOfLines={1}>
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 教練姓名：</Text>
+                                {data.item.coach}
+                                {/* 之後這裡要改 */}
+                            </Text>
+                        </View>
+
+                    </View>
+                </TouchableHighlight>
+            </Animated.View>
+        );
+    };
+    const VisibleItem_game = props => {
+        const {
+            data,
+            rowHeightAnimatedValue,
+            removeRow,
+            leftActionState,
+            rightActionState,
+        } = props;
+
+        if (rightActionState) {
+            Animated.timing(rowHeightAnimatedValue, {
+                toValue: 0,
+                duration: 100,
+                useNativeDriver: false,
+            }).start(() => {
+                removeRow();
+            });
+        }
+
+        return (
+            <Animated.View
+                style={[styles.front, { height: rowHeightAnimatedValue }]}>
+                <TouchableHighlight
+                    style={styles.rowFrontVisible}
+                    onPress={() => console.log('Element touched')}
+                    underlayColor={'#aaa'}>
+
+                    <View style={styles.card}>
+                        <View style={styles.cardImgWrapper}>
+                            <Image
+                                source={require('../assets/logo.png')}
+                                resizeMode="cover"
+                                style={styles.cardImg}
+                            />
+                        </View>
+                        <View style={styles.cardInfo}>
+                            <Text numberOfLines={1}>
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 主隊名稱：</Text>
+                                {data.item.host}
+                                {/* 之後這裡要改 */}
+                            </Text>
+                            <Text numberOfLines={1}>
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 客隊名稱：</Text>
+                                {data.item.guest}
+                                {/* 之後這裡要改 */}
+                            </Text>
+                            <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 比賽日期時間：</Text>
+                            <Text numberOfLines={1}>
+                                {data.item.date}
                                 {/* 之後這裡要改 */}
                             </Text>
                         </View>
@@ -143,18 +339,110 @@ const QueryModifyScreen = ({ navigation }) => {
         );
     };
 
-    const renderItem = (data, rowMap) => {
-        const rowHeightAnimatedValue = new Animated.Value(60);
+    const VisibleItem_player = props => {
+        const {
+            data,
+            rowHeightAnimatedValue,
+            removeRow,
+            leftActionState,
+            rightActionState,
+        } = props;
+
+        if (rightActionState) {
+            Animated.timing(rowHeightAnimatedValue, {
+                toValue: 0,
+                duration: 100,
+                useNativeDriver: false,
+            }).start(() => {
+                removeRow();
+            });
+        }
 
         return (
-            <VisibleItem
+            <Animated.View
+                style={[styles.front, { height: rowHeightAnimatedValue }]}>
+                <TouchableHighlight
+                    style={styles.rowFrontVisible}
+                    onPress={() => console.log('Element touched')}
+                    underlayColor={'#aaa'}>
+
+                    <View style={styles.card}>
+                        <View style={styles.cardImgWrapper}>
+                            <Image
+                                source={require('../assets/logo.png')}
+                                resizeMode="cover"
+                                style={styles.cardImg}
+                            />
+                        </View>
+                        <View style={styles.cardInfo}>
+                            <Text numberOfLines={1}>
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 球隊名稱：</Text>
+                                {data.item.team}
+                                {/* 之後這裡要改 */}
+                            </Text>
+                            <Text numberOfLines={1}>
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 球員名稱：</Text>
+                                {data.item.name}
+                                {/* 之後這裡要改 */}
+                            </Text>
+                            <Text numberOfLines={1}>
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 位置：</Text>
+                                {data.item.position}
+                                {/* 之後這裡要改 */}
+                            </Text>
+                            <Text numberOfLines={1}>
+                                <Text style={{ fontWeight: "bold", color: '#003377' }}>◆ 球員背號：</Text>
+                                {data.item.number}
+                                {/* 之後這裡要改 */}
+                            </Text>
+                        </View>
+
+                    </View>
+                </TouchableHighlight>
+            </Animated.View>
+        );
+    };
+
+
+    const renderItem_team = (data, rowMap) => {
+
+        const rowHeightAnimatedValue = new Animated.Value(100); // 修改和刪除的高度
+        return (
+            <VisibleItem_team
                 data={data}
                 rowHeightAnimatedValue={rowHeightAnimatedValue}
-                removeRow={() => deleteRow(rowMap, data.item.key)}
+                removeRow={() => deleteRow(rowMap, data.item.team_id)}
             />
 
         );
     };
+
+    const renderItem_player = (data, rowMap) => {
+
+        const rowHeightAnimatedValue = new Animated.Value(100); // 修改和刪除的高度
+        return (
+            <VisibleItem_player
+                data={data}
+                rowHeightAnimatedValue={rowHeightAnimatedValue}
+                removeRow={() => deleteRow(rowMap, data.item.player_id)}
+            />
+
+        );
+    };
+
+    const renderItem_game = (data, rowMap) => {
+
+        const rowHeightAnimatedValue = new Animated.Value(100); // 修改和刪除的高度
+        return (
+            <VisibleItem_game
+                data={data}
+                rowHeightAnimatedValue={rowHeightAnimatedValue}
+                removeRow={() => deleteRow(rowMap, data.item.game_id)}
+            />
+
+        );
+    };
+
 
     const HiddenItemWithActions = props => {
         const {
@@ -187,7 +475,7 @@ const QueryModifyScreen = ({ navigation }) => {
                         style={[styles.backRightBtn, styles.backRightBtnLeft]}
                         onPress={onClose}>
                         <MaterialCommunityIcons
-                            name="close-circle-outline"
+                            name="border-color"
                             size={25}
                             style={styles.trash}
                             color="#fff"
@@ -235,7 +523,7 @@ const QueryModifyScreen = ({ navigation }) => {
         );
     };
 
-    const renderHiddenItem = (data, rowMap) => {
+    const renderHiddenItem_team = (data, rowMap) => {
         const rowActionAnimatedValue = new Animated.Value(75);
         const rowHeightAnimatedValue = new Animated.Value(60);
 
@@ -246,8 +534,42 @@ const QueryModifyScreen = ({ navigation }) => {
                 rowMap={rowMap}
                 rowActionAnimatedValue={rowActionAnimatedValue}
                 rowHeightAnimatedValue={rowHeightAnimatedValue}
-                onClose={() => closeRow(rowMap, data.item.key)}
-                onDelete={() => deleteRow(rowMap, data.item.key)}
+                onClose={() => closeRow(rowMap, data.item.team_id)}
+                onDelete={() => deleteRow(rowMap, data.item.team_id)}
+            />
+        );
+    };
+
+    const renderHiddenItem_player = (data, rowMap) => {
+        const rowActionAnimatedValue = new Animated.Value(75);
+        const rowHeightAnimatedValue = new Animated.Value(60);
+
+
+        return (
+            <HiddenItemWithActions
+                data={data}
+                rowMap={rowMap}
+                rowActionAnimatedValue={rowActionAnimatedValue}
+                rowHeightAnimatedValue={rowHeightAnimatedValue}
+                onClose={() => closeRow(rowMap, data.item.player_id)}
+                onDelete={() => deleteRow(rowMap, data.item.player_id)}
+            />
+        );
+    };
+
+    const renderHiddenItem_game = (data, rowMap) => {
+        const rowActionAnimatedValue = new Animated.Value(75);
+        const rowHeightAnimatedValue = new Animated.Value(60);
+
+
+        return (
+            <HiddenItemWithActions
+                data={data}
+                rowMap={rowMap}
+                rowActionAnimatedValue={rowActionAnimatedValue}
+                rowHeightAnimatedValue={rowHeightAnimatedValue}
+                onClose={() => closeRow(rowMap, data.item.game_id)}
+                onDelete={() => deleteRow(rowMap, data.item.game_id)}
             />
         );
     };
@@ -268,95 +590,14 @@ const QueryModifyScreen = ({ navigation }) => {
     // 三個toggle的狀態
 
     const threeToggleState = () => {
-        // 處理前的資料
+        // // 處理前的資料
+        // getTeamsJson();
+
+        console.log("displayDataSource: ", displayDataSource);
+        console.log("listData: ", listData);
         console.log("isGameSelected: ", isGameSelected);
         console.log("isTeamSelected: ", isTeamSelected);
         console.log("isPlayerSelected: ", isPlayerSelected);
-
-
-        // if (!isGameSelected & !isTeamSelected & !isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         if (item.type == "game" || item.type == "team" || item.type == "player") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else if (isGameSelected & !isTeamSelected & !isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         if (item.type == "team" || item.type == "player") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else if (!isGameSelected & isTeamSelected & !isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         if (item.type == "game" || item.type == "player") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else if (!isGameSelected & !isTeamSelected & isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         if (item.type == "game" || item.type == "team") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else if (isGameSelected & isTeamSelected & !isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         if (item.type == "player") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else if (isGameSelected & !isTeamSelected & isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         if (item.type == "team") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else if (!isGameSelected & isTeamSelected & isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         if (item.type == "game") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else if (isGameSelected & isTeamSelected & isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         return item
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
 
     }
 
@@ -366,22 +607,41 @@ const QueryModifyScreen = ({ navigation }) => {
         setIsPlayerSelected(isPlayerSelected => !isPlayerSelected);
         setIsGameSelected(false);
         setIsTeamSelected(false);
+        getPlayersJson();
+
 
         // 我也不知道為什麼要用!才是對的
-        // if (!isPlayerSelected) {
-        //     const newData = listData.filter(function (item) {
-        //         if (item.type == "player") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else {
-        //     setFilteredDataSource(listData);
-        // }
+        if (!isPlayerSelected & search == '') {                     // 點擊開 & 沒有 search text
+            const newData = listData.filter(function (item) {
+                if (item.type == "player") {
+                    return item
+                }
+                else {
+                    return null
+                }
+            });
+            setFilteredDataSource(newData);
+            setDisplayDataSource(newData);
+            // searchFilterFunction(search);
+        }
+        else if (!isPlayerSelected & search != '') {                // 點擊開 & 有 search text
+            const newData = searchData.filter(function (item) {
+                if (item.type == "player") {
+                    return item
+                }
+                else {
+                    return null
+                }
+            });
+            setFilteredDataSource(newData);
+            setDisplayDataSource(newData);
+            // searchFilterFunction(search);
+        }
+        else {                                                      // 點擊關
+            // setFilteredDataSource(listData);
+            searchGlobalFilterFunction(search);
+            // setDisplayDataSource(listData);
+        }
         threeToggleState();
 
     }
@@ -390,21 +650,44 @@ const QueryModifyScreen = ({ navigation }) => {
         setIsGameSelected(isGameSelected => !isGameSelected);
         setIsPlayerSelected(false);
         setIsTeamSelected(false);
+        getGamesJson();
+
+        // // 每次點 toggle 都會將資料重置為 listData
+        // setFilteredDataSource(listData);
+
+
         // 我也不知道為什麼要用!才是對的
-        // if (!isGameSelected) {
-        //     const newData = filteredDataSource.filter(function (item) {
-        //         if (item.type == "game") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else {
-        //     setFilteredDataSource(listData);
-        // }
+        if (!isGameSelected & search == '') {                     // 點擊開 & 沒有 search text
+            const newData = searchData.filter(function (item) {
+                if (item.type == "game") {
+                    return item
+                }
+                else {
+                    return null
+                }
+            });
+            setFilteredDataSource(newData);
+            setDisplayDataSource(newData);
+            // searchFilterFunction(search);
+        }
+        else if (!isGameSelected & search != '') {                     // 點擊開 & 有 search text
+            const newData = listData.filter(function (item) {
+                if (item.type == "game") {
+                    return item
+                }
+                else {
+                    return null
+                }
+            });
+            setFilteredDataSource(newData);
+            setDisplayDataSource(newData);
+            // searchFilterFunction(search);
+        }
+        else {
+            // setFilteredDataSource(listData);
+            searchGlobalFilterFunction(search);
+            // setDisplayDataSource(listData);
+        }
         threeToggleState();
     }
 
@@ -413,21 +696,40 @@ const QueryModifyScreen = ({ navigation }) => {
         setIsTeamSelected(isTeamSelected => !isTeamSelected);
         setIsPlayerSelected(false);
         setIsGameSelected(false);
+        getTeamsJson();
+
         // 我也不知道為什麼要用!才是對的
-        // if (!isTeamSelected) {
-        //     const newData = filteredDataSource.filter(function (item) {
-        //         if (item.type == "team") {
-        //             return item
-        //         }
-        //         else {
-        //             return null
-        //         }
-        //     });
-        //     setFilteredDataSource(newData);
-        // }
-        // else {
-        //     setFilteredDataSource(listData);
-        // }
+        if (!isTeamSelected & search == '') {                     // 點擊開 & 沒有 search text
+            const newData = listData.filter(function (item) {
+                if (item.type == "team") {
+                    return item
+                }
+                else {
+                    return null
+                }
+            });
+            setFilteredDataSource(newData);
+            setDisplayDataSource(newData);
+            // searchFilterFunction(search);
+        }
+        else if (!isTeamSelected & search != '') {                     // 點擊開 & 有 search text
+            const newData = searchData.filter(function (item) {
+                if (item.type == "team") {
+                    return item
+                }
+                else {
+                    return null
+                }
+            });
+            setFilteredDataSource(newData);
+            setDisplayDataSource(newData);
+            // searchFilterFunction(search);
+        }
+        else {
+            // setFilteredDataSource(listData);
+            searchGlobalFilterFunction(search);
+            // setDisplayDataSource(listData);
+        }
         threeToggleState();
     }
 
@@ -436,26 +738,68 @@ const QueryModifyScreen = ({ navigation }) => {
     const searchFilterFunction = (text) => {
         // Check if searched text is not blank
         console.log("text:", text);
+
+        // const beforeSearchData = filteredDataSource; // 篩選過後的結果
         if (text) {
             // Inserted text is not blank
             // Filter the masterDataSource
             // Update FilteredDataSource
-            const newData = listData.filter(function (item) {
-                const itemData = item.question            // 原資料有的內容
-                    ? item.question.toUpperCase()
+            const newData = filteredDataSource.filter(function (item) {
+                const itemData = item.name            // 原資料有的內容
+                    ? item.name.toUpperCase()
                     : ''.toUpperCase();
 
                 const textData = text.toUpperCase();   // 搜尋框打的內容
+
                 return itemData.indexOf(textData) > -1;
             });
-            setFilteredDataSource(newData);
+            setDisplayDataSource(newData); // 只會更動到display的結果，filtered的結果依舊
+            setSearchData(newData);
             setSearch(text);
         } else {
             // Inserted text is blank
             // Update FilteredDataSource with masterDataSource
 
-            setFilteredDataSource(listData);
+            setSearchData(filteredDataSource);
+            setDisplayDataSource(filteredDataSource);
             setSearch(text);
+            console.log("searchFilterFunction empty");
+
+        }
+        // console.log("isGameSelected: ", isGameSelected);
+        // console.log("isPlayerSelected: ", isPlayerSelected);
+        // console.log("isTeamSelected: ", isTeamSelected);
+
+
+    };
+
+    const searchGlobalFilterFunction = (text) => {
+        // Check if searched text is not blank
+        console.log("text:", text);
+
+        // const beforeSearchData = filteredDataSource; // 篩選過後的結果
+        if (text) {
+            // Inserted text is not blank
+            // Filter the masterDataSource
+            // Update FilteredDataSource
+            const newData = listData.filter(function (item) {
+                const itemData = item.name            // 原資料有的內容
+                    ? item.name.toUpperCase()
+                    : ''.toUpperCase();
+
+                const textData = text.toUpperCase();   // 搜尋框打的內容
+                return itemData.indexOf(textData) > -1;
+            });
+            setDisplayDataSource(newData); // 只會更動到display的結果，filtered的結果依舊
+            setSearchData(newData);
+            setSearch(text);
+        } else {
+            // Inserted text is blank
+            // Update FilteredDataSource with masterDataSource
+            setSearchData(listData);
+            setDisplayDataSource(listData);
+            setSearch(text);
+            console.log("searchGlobalFilterFunction empty");
 
         }
         // console.log("isGameSelected: ", isGameSelected);
@@ -466,165 +810,167 @@ const QueryModifyScreen = ({ navigation }) => {
     };
 
 
-
-    const getItem = (item) => {
-        // Function for click on an item
-        alert('Id : ' + item.id + ' Title : ' + item.title);
-    };
-
-
     return (
         <View style={styles.container}>
-            {/* <View style={styles.sliderContainer}>
-                <Swiper
-                    autoplay={true}
-                    horizontal={false}
-                    height={200}
-                    activeDotColor="#FFCCCC">
-                    <View style={styles.slide}>
+            <View>
+                <View>
+                    <Text
+                        style={{
+                            alignSelf: 'center',
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                            color: '#333',
+                            paddingTop: 20
+                        }}>
+                        篩選條件
+                    </Text>
+
+                </View>
+            </View>
+            <View style={[styles.categoryContainer, { marginTop: 10 }]}>
+                <TouchableOpacity
+                    style={styles.categoryBtn}
+                    onPress={toggleGameSelected}>
+                    <View style={[styles.categoryIcon, { backgroundColor: isGameSelected ? 'coral' : 'peachpuff' }]}>
                         <Image
-                            source={require('../assets/logo.png')}
-                            resizeMode='cover'
-                            style={styles.sliderImage}
+                            style={{
+                                width: '50%',
+                                height: '50%',
+                            }}
+                            resizeMode='contain'
+                            source={isGameSelected ? require('../assets/icons/court-white.png') : require('../assets/icons/court.png')}
                         />
+                        <View style={{ marginTop: 10 }}>
+                            <Text style={{
+                                alignSelf: 'center',
+                                fontSize: '150%',
+                                fontWeight: 'bold',
+                                color: isGameSelected ? '#FFFFFF' : '#000000',
+                            }}>找球賽</Text>
+                        </View>
                     </View>
-                    <View style={styles.slide}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.categoryBtn}
+                    onPress={toggleTeamSelected}>
+                    <View style={[styles.categoryIcon, { backgroundColor: isTeamSelected ? 'coral' : 'peachpuff' }]}>
                         <Image
-                            source={require('../assets/logo.jpg')}
-                            resizeMode='cover'
-                            style={styles.sliderImage}
+                            style={{
+                                width: '50%',
+                                height: '50%',
+                            }}
+                            resizeMode='contain'
+                            source={isTeamSelected ? require('../assets/icons/team-white.png') : require('../assets/icons/team.png')}
                         />
+                        <View style={{ marginTop: 10 }}>
+                            <Text style={{
+                                alignSelf: 'center',
+                                fontSize: '150%',
+                                fontWeight: 'bold',
+                                color: isTeamSelected ? '#FFFFFF' : '#000000',
+                            }}>找球隊</Text>
+                        </View>
                     </View>
-                </Swiper>
-            </View> */}
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.categoryBtn}
+                    onPress={togglePlayerSelected}>
+                    <View style={[styles.categoryIcon, { backgroundColor: isPlayerSelected ? 'coral' : 'peachpuff' }]}>
+                        <Image
+                            style={{
+                                width: '50%',
+                                height: '50%',
+                            }}
+                            resizeMode='contain'
+                            source={isPlayerSelected ? require('../assets/icons/basketball-player-white.png') : require('../assets/icons/basketball-player.png')}
+                        />
+                        <View style={{ marginTop: 10 }}>
+                            <Text style={{
+                                alignSelf: 'center',
+                                fontSize: '150%',
+                                fontWeight: 'bold',
+                                color: isPlayerSelected ? '#FFFFFF' : '#000000',
+                            }}>找球員</Text>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </View>
+            <View>
+                <View>
+                    <Text
+                        style={{
+                            alignSelf: 'center',
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                            color: '#333',
+                            paddingTop: 20
+                        }}>
+                        搜尋名稱
+                    </Text>
+
+                </View>
+            </View>
             <View style={styles.cardsWrapper}>
                 <SearchBar
                     round
                     searchIcon={{ size: 30 }}
                     onChangeText={(text) => searchFilterFunction(text)}
                     onClear={(text) => searchFilterFunction('')}
-                    placeholder="Type Here..."
+                    placeholder="搜尋 球員名稱／球隊名稱"
                     value={search}
                     lightTheme={true}
-                    containerStyle={{ backgroundColor: '#ffffff', padding: 15, borderRadius: 30 }}
-                    inputContainerStyle={{ backgroundColor: 'white' }}
-                    inputStyle={{ backgroundColor: '#FFF8D7', textAlign: 'center' }}
+                    containerStyle={{ backgroundColor: 'gray', padding: 0, borderRadius: 15, }}
+                    inputContainerStyle={{ backgroundColor: '#f4f4f4' }}
+                    inputStyle={{ backgroundColor: 'white', textAlign: 'center' }}
                     placeholderTextColor={'gray'}
                 />
             </View>
-            <View style={styles.categoryContainer}>
+            <View>
                 <View>
-                    <Text style={{
-                        alignSelf: 'center',
-                        fontSize: 18,
-                        fontWeight: 'bold',
-                        color: '#333',
-                    }}>Hello World!Hello World!Hello World!Hello World!</Text>
+                    <Text
+                        style={{
+                            alignSelf: 'center',
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                            color: '#333',
+                            paddingBottom: 20
+                        }}>
+                        搜尋結果
+                    </Text>
+
                 </View>
-            </View>
-
-            {/* <View style={styles.categoryContainer}>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                    </View>
-                </TouchableOpacity>
-            </View> */}
-            <View style={[styles.categoryContainer, { marginTop: 10 }]}>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                        <Button
-                            onPress={toggleGameSelected}
-                            title="找球賽"
-                            style={{}}
-                            color={isGameSelected ? "#FF0048" : "#f4f3f4"}
-                            accessibilityLabel="Learn more about this purple button"
-                        />
-                        {/* <Switch
-                            trackColor={{ false: "#767577", true: "#FF9494" }}
-                            thumbColor={isGameSelected ? "#FF0048" : "#f4f3f4"}
-                            ios_backgroundColor="#3e3e3e"
-                            onValueChange={toggleGameSelected}
-                            value={isGameSelected}
-                        /> */}
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                        <Button
-                            onPress={toggleTeamSelected}
-                            title="找球隊"
-                            style={{}}
-                            color={isTeamSelected ? "#FF0048" : "#f4f3f4"}
-                            accessibilityLabel="Learn more about this purple button"
-                        />
-                        {/* <Switch
-                            trackColor={{ false: "#767577", true: "#FF9494" }}
-                            thumbColor={isTeamSelected ? "#FF0048" : "#f4f3f4"}
-                            ios_backgroundColor="#3e3e3e"
-                            onValueChange={toggleTeamSelected}
-                            value={isTeamSelected}
-                        /> */}
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.categoryBtn} onPress={() => { }}>
-                    <View style={styles.categoryIcon}>
-                        <Ionicons name="expand-more" size={35} color="#FFCCCC" />
-                        <Button
-                            onPress={togglePlayerSelected}
-                            title="找球員"
-                            style={{}}
-                            color={isPlayerSelected ? "#FF0048" : "#f4f3f4"}
-                            accessibilityLabel="Learn more about this purple button"
-                        />
-                        {/* <Switch
-                            trackColor={{ false: "#767577", true: "#FF9494" }}
-                            thumbColor={isPlayerSelected ? "#FF0048" : "#f4f3f4"}
-                            ios_backgroundColor="#3e3e3e"
-                            onValueChange={togglePlayerSelected}
-                            value={isPlayerSelected}
-                        /> */}
-
-                    </View>
-                </TouchableOpacity>
             </View>
             <ScrollView>
                 <View>
-                    <View >
-                        <Text
-                            style={{
-                                alignSelf: 'center',
-                                fontSize: 18,
-                                fontWeight: 'bold',
-                                color: '#333',
-                            }}>
-                            Recently Viewed
-                        </Text>
+                    <View>
                         <View style={{ height: 1000 }}>
                             {/* <StatusBar backgroundColor="#FF6347" barStyle="light-content"/> */}
                             <SwipeListView
 
-                                data={filteredDataSource}
-                                renderItem={renderItem}
-                                renderHiddenItem={renderHiddenItem}
+                                data={displayDataSource}
+                                keyExtractor={item => item.team_id}
+                                renderItem={
+                                    isTeamSelected
+                                        ? renderItem_team
+                                        : isPlayerSelected
+                                            ? renderItem_player
+                                            : isGameSelected
+                                                ? renderItem_game
+                                                : renderItem_team}
+                                renderHiddenItem={
+                                    isTeamSelected
+                                        ? renderHiddenItem_team
+                                        : isPlayerSelected
+                                            ? renderHiddenItem_player
+                                            : renderHiddenItem_game
+                                                ? renderHiddenItem_game
+                                                : renderHiddenItem_team}
                                 leftOpenValue={75}
-                                rightOpenValue={-150}
+                                rightOpenValue={-150} // 向左拉可以拉到那裡停下來 -150 是看到修改
                                 // disableRightSwipe
                                 onRowDidOpen={onRowDidOpen}
                                 leftActivationValue={100}
-                                // rightActivationValue={-300}     // 由右向左拉到 -300 就會 extend 刪除的紅色區域
+                                // rightActivationValue={-75}     // 由右向左拉到 -300 就會 extend 刪除的紅色區域
                                 leftActionValue={0}
                                 rightActionValue={-500}
                                 onLeftAction={onLeftAction}
@@ -634,24 +980,13 @@ const QueryModifyScreen = ({ navigation }) => {
                                 swipeRowStyle={{ height: 100 }} // 調這
                             />
                         </View>
-                        <View style={styles.card}>
-                            <View style={styles.cardImgWrapper}>
-                                <Image
-                                    source={require('../assets/logo.png')}
-                                    resizeMode="cover"
-                                    style={styles.cardImg}
-                                />
-                            </View>
-                            <View style={styles.cardInfo}>
-                                <Text style={styles.cardTitle}>Amazing Food Place</Text>
-                                <Text style={styles.cardDetails}>
-                                    Amazing description for this amazing place
-                                </Text>
-                            </View>
-                        </View>
                     </View>
                 </View>
             </ScrollView>
+            <View style={[styles.categoryContainer, { marginTop: 120 }]}>
+                <View>
+                </View>
+            </View>
         </View>
     );
 };
@@ -709,6 +1044,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     categoryBtn: {
+        // backgroundColor: '透明',
         flex: 1,
         width: '30%',
         marginHorizontal: 0,
@@ -721,7 +1057,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         width: "80%",
         height: 150,
-        backgroundColor: '#fdeae7' /* '#FF6347' */,
+        // backgroundColor: '#000000', // 找球賽、找球隊、找球員的顏色
         borderRadius: 50,
     },
     categoryBtnTxt: {
@@ -730,13 +1066,10 @@ const styles = StyleSheet.create({
         color: '#de4f35',
     },
     cardsWrapper: {
-        marginTop: 50,
-        marginBottom: 50,
+        marginTop: 10,
+        marginBottom: 10,
         width: '90%',
         alignSelf: 'center',
-    },
-    searchBar: {
-
     },
     card: {
         height: "100%",

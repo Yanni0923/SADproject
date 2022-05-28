@@ -5,6 +5,7 @@ import CreateInfoScreen from '../screens/CreateInfoScreen';
 import PPPScreen from '../screens/PPPScreen';
 import QueryModifyScreen from '../screens/QueryModifyScreen';
 import StatAnalysisScreen from '../screens/StatAnalysisScreen';
+import { textAlign } from '@mui/system';
 
 const Tab = createBottomTabNavigator();
 
@@ -21,8 +22,8 @@ const CustomTabBarButton = ({ children, onPress }) => (
         onPress={onPress}
     >
         <View style={{
-            width: 60,
-            height: 60,
+            width: 80,
+            height: 80,
             borderRadius: 35,
             backgroundColor: '#FF6666'
         }}
@@ -57,16 +58,18 @@ const Tabs = () => {
                             source={require('../assets/icons/user.png')}
                             resizeMode='contain'
                             style={{
-                                width: 25,
-                                height: 25,
+                                width: 35,
+                                height: 35,
                                 tintColor: focused ? '#e32f45' : '#748c94'
                             }}
                         />
                         <Text
                             style={{
+                                paddingTop: 2,
                                 color: focused ? '#e32f45' : '#748c94',
-                                fontSize: 12
-                            }}>Home</Text>
+                                fontSize: 8,
+                                textAlign: 'center'
+                            }}>個人主頁</Text>
                     </View>
                 ),
                 headerShown: false  // 把導航列的標題隱藏
@@ -85,9 +88,11 @@ const Tabs = () => {
                         />
                         <Text
                             style={{
+                                paddingTop: 8,
                                 color: focused ? '#e32f45' : '#748c94',
-                                fontSize: 12
-                            }}>CreateInfo</Text>
+                                fontSize: 8,
+                                textAlign: 'center'
+                            }}>新增資訊</Text>
                     </View>
                 ),
                 headerShown: false  // 把導航列的標題隱藏
@@ -124,9 +129,11 @@ const Tabs = () => {
                         />
                         <Text
                             style={{
+                                paddingTop: 8,
                                 color: focused ? '#e32f45' : '#748c94',
-                                fontSize: 12
-                            }}>QueryModify</Text>
+                                fontSize: 8,
+                                textAlign: 'center'
+                            }}>查詢修改</Text>
                     </View>
                 ),
                 headerShown: false  // 把導航列的標題隱藏
@@ -145,9 +152,11 @@ const Tabs = () => {
                         />
                         <Text
                             style={{
+                                paddingTop: 8,
                                 color: focused ? '#e32f45' : '#748c94',
-                                fontSize: 12
-                            }}>StatAnalysis</Text>
+                                fontSize: 8,
+                                textAlign: 'center'
+                            }}>情蒐報表</Text>
                     </View>
                 ),
                 headerShown: false  // 把導航列的標題隱藏

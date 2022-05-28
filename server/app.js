@@ -26,43 +26,8 @@ const getList = ((rows, cname, ) => {
     }
     return values;
 });
-const getMultiList = ((rows, name_list ) => {
-    // get list of values of a column from RowDataPacket
-    obj = JSON.parse(JSON.stringify(rows));
-    values = [];
-    for (let i = 0; i < obj.length; i++) {
-        sub_value = [];
-        for (let j = 0; j <  name_list.length; j++) {
-            sub_value.push(obj[i][name_list[j]])
-        }
-        values.push(sub_value);
-    }
-    return values;
-});
-app.get('/getTeamsWithId', (request, response) => {
-    db.query(
-        `SELECT * FROM team`,
-        function (err, rows) {
-            teams = getMultiList(rows, ['team_id', 'name']);
-            console.log(teams);
-            if (rows.length === 0) {
-                console.log('No teams found.')
-            }
-            if (err) {
-                error_msg = err.code + ": Server Error";
-                console.log(error_msg);
-                return response.send({ message: error_msg });
-            };
-            id = teams.map(function(element){
-                return element[0];
-            });
-            teamName = teams.map(function(element){
-                return element[1];
-            });
-            return response.send({id:id, teamName:teamName});
-        }
-    )
-});
+
+
 app.post("/signin", function (req, res) {
     const { username, password } = req.body;
     db.query(
@@ -99,6 +64,7 @@ app.post('/createTeam', function (req, res) {
     db.query(
         `INSERT INTO team(name, school, coach) VALUES ('${name}', '${school}', '${coach}')`,
         function (err, rows, fields) {
+            console.log(name);
             if (err) {
                 error_msg = err.code + ": Server Error";
                 console.log(error_msg);
@@ -127,8 +93,9 @@ app.post('/createGame', function (req, res) {
 app.post('/createPlayer', function (req, res) {
     const { team, name, position, number } = req.body;
     db.query(
-        `INSERT INTO player(team, name, position, number) VALUES ('${team}', '${name}', '${position}', '${number}')`,
+        `INSERT INTO player( team, name, position, number, hand, height, weight) VALUES ('政治大學', '歐', 'C',23, 'right', 189, 90)`,
         function (err, rows, fields) {
+            console.log( team, name, position, number)
             if (err) {
                 error_msg = err.code + ": Server Error";
                 console.log(error_msg);
@@ -145,6 +112,7 @@ app.get('/getTeams', (request, response) => {
         `SELECT * FROM team`,
         function (err, rows, fields) {
             teams = getList(rows, 'name');
+            id = getList(rows, 'team_id');
             console.log(teams);
             if (rows.length === 0) {
                 console.log('No teams found.')
@@ -154,7 +122,49 @@ app.get('/getTeams', (request, response) => {
                 console.log(error_msg);
                 return response.send({ message: error_msg });
             };
-            return response.send({ data: teams });
+            return response.send({ data: teams, id:id });
         }
     )
-})
+});
+app.post("/getPlayersByTeam", function (req, res) {
+
+    db.query(
+        `SELECT * FROM player WHERE team='${req.body.teamName}';`,//WHERE team='${team}'
+        function (err, rows, fields) {
+            players = getList(rows, 'name');
+            id = getList(rows, 'player_id');
+            // console.log(req.body.teamName);
+            // console.log(players);
+            if (rows.length === 0) {
+                console.log('No player found.');
+            }
+            if (err) {
+                error_msg = err.code + ": Server Error";
+                console.log(error_msg);
+                return response.send({ message: error_msg });
+            };
+            return res.send({ players: players, id:id });
+        }
+    );
+});
+app.post("/getGamesByTeam", function (req, res) {
+
+    db.query(
+        `SELECT * FROM game ;`,//WHERE team='${req.body.teamName}'
+        function (err, rows, fields) {
+            games = getList(rows, 'host');
+            id = getList(rows, 'game_id');
+            console.log(req.body.teamName);
+            console.log(rows);
+            if (rows.length === 0) {
+                console.log('No player found.');
+            }
+            if (err) {
+                error_msg = err.code + ": Server Error";
+                console.log(error_msg);
+                return response.send({ message: error_msg });
+            };
+            return res.send({ games: games, id:id });
+        }
+    );
+});

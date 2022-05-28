@@ -8,8 +8,10 @@ const PPPScreen = ({ navigation }) => {
     const problem_length = 5;
 
     const [allTeams, setAllTeams] = useState(data.teams);
-    const allGames = data.games;
+    const [allGames, setAllGames] = useState(data.games);
+
     const allPlayers = data.players;
+    const [players, setPlayers] = useState(allPlayers[0]['台灣大學']);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentOptionSelected, setCurrentOptionSelected] = useState(null);
     const [score, setScore] = useState(0);
@@ -27,7 +29,7 @@ const PPPScreen = ({ navigation }) => {
     const [isPickBH, setPickBH] = useState(null);
     const [foulPossible, setFoulPossible] = useState(null);
     const possibleFoulList = ['2y', '2x', '3y', '3x', 'Shooting Foul']
-    var question = [allTeams, allTeams, allPlayers[0][targetTeam], data.ppp_1, data.ppp_2[0][targetPlayType], data.ppp_3[0][isPickBH], data.ppp_4]
+    var question = [allTeams, allGames, players, data.ppp_1, data.ppp_2[0][targetPlayType], data.ppp_3[0][isPickBH], data.ppp_4]
     var target = [targetTeam, targetGame, targetPlayer, targetPlayType, targetFinish, targetResult, targetFreeThrow]
     const question_name = ['隊伍', '敵方隊伍', '球員', 'Play Type', 'Finish', 'Result', 'Free Throw']
     // 只要有選項被點下去，就會執行這個
@@ -35,9 +37,10 @@ const PPPScreen = ({ navigation }) => {
     // 所以 validateAnswer 和 renderQuestion() 是綁在一起的
     const getTeamsList = (() => {
         // Get team data
-        axios.get('http://localhost:7777/getTeamsWithId')
+        axios.get('http://localhost:7777/getTeams')
             .then((response) => {
-                const teamList = response.data['id'];
+                const teamList = response.data['data'];
+                const id = response.data['id'];
                 console.log(teamList);
                 setAllTeams(teamList);
                 console.log(allTeams);
@@ -45,11 +48,46 @@ const PPPScreen = ({ navigation }) => {
             })
             .catch((error) => { console.error(error) })
     });
-    
+    const getGamesList = ((team) => {
+        axios
+            .post
+            ('http://localhost:7777/getGamesByTeam', {
+                teamName:team,
+            })
+            .then((response) => {
+                const gameList = response.data['games'];
+                const id = response.data['id'];
+                console.log(gameList);
+                setAllGames(gameList);
+                
+                // some mysterious issues here...
+            })
+            .catch((error) => { console.error(error) })
+    });
+    const getPlayersList = ((team) => {
+        axios
+            .post
+            ('http://localhost:7777/getPlayersByTeam', {
+                teamName:team,
+            })
+            .then((response) => {
+                const playerList = response.data['players'];
+                const id = response.data['id'];
+                console.log(playerList);
+                setPlayers(playerList);
+                
+                // some mysterious issues here...
+            })
+            .catch((error) => { console.error(error) })
+    });
     // 我要把這裡改成「顯示」&「把 Team 紀錄到資料庫」
     const validateSelected = (selectedOption) => {
         console.log(selectedOption);
-        if (currentQuestionIndex == 0) { setTargetTeam(selectedOption); }
+        if (currentQuestionIndex == 0) { 
+            setTargetTeam(selectedOption); 
+            getPlayersList(selectedOption);
+            getGamesList(selectedOption);
+        }
         if (currentQuestionIndex == 1) { setTargetGame(selectedOption); }
         if (currentQuestionIndex == 2) { setTargetPlayer(selectedOption); }
 

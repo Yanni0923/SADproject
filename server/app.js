@@ -229,3 +229,60 @@ app.get('/getPlayersQuery', (request, response) => {
         }
     )
 });
+
+
+
+// 匯出情蒐報表的 search
+
+app.post('/searchTeam', function (request, response) {
+    const { team_name } = request.body;
+    db.query(
+        `SELECT P.game_id, Pr.team, Pr.name, P.type, P.finish, P.result, P.free_throw
+        FROM ntubb.play as P, ntubb.player as Pr, ntubb.team as T
+        WHERE P.player_id = Pr.player_id and Pr.team = T.name and T.name = '${team_name}'`,
+        function (err, rows, fields) {
+            if (rows.length === 0) {
+                console.log('查無球隊資料，請檢察拼字是否正確');
+            }
+            if (err) {
+                error_msg = err.code + ": Server Error";
+                console.log(error_msg);
+                return response.send({ message: error_msg });
+            };
+            obj = JSON.parse(JSON.stringify(rows));
+            values = [];
+            for (let i = 0; i < obj.length; i++) {
+                values.push(obj[i]);
+            }
+            return response.send({ data: values });
+        }
+    );
+});
+
+
+app.post('/searchPlayer', function (request, response) {
+    const { team_name, player_name } = request.body;
+    db.query(
+        `SELECT P.game_id, Pr.team, Pr.name, P.type, P.finish, P.result, P.free_throw
+        FROM ntubb.play as P, ntubb.player as Pr, ntubb.team as T
+        WHERE P.player_id = Pr.player_id and Pr.team = T.name and T.name = '${team_name}' and Pr.name = '${player_name}'`,
+        function (err, rows, fields) {
+            if (rows.length === 0) {
+                console.log('No data found.')
+                // console.log(team_name)
+                // console.log(player_name)
+            }
+            if (err) {
+                error_msg = err.code + ": Server Error";
+                console.log(error_msg);
+                return response.send({ message: error_msg });
+            };
+            obj = JSON.parse(JSON.stringify(rows));
+            values = [];
+            for (let i = 0; i < obj.length; i++) {
+                values.push(obj[i]);
+            }
+            return response.send({ data: values });
+        }
+    );
+});

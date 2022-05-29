@@ -9,11 +9,9 @@ const PPPScreen = ({ navigation }) => {
     const problem_length = 5;
 
     const [allTeams, setAllTeams] = useState(data.teams);
-
-    const [team_id, setteam_id] = useState([]);
-    const [game_id, setgame_id] = useState([]);
-    const [player_id, setplayer_id] = useState([]);
-
+    var team_id = []
+    var game_id = []
+    var player_id = []
     const [allGames, setAllGames] = useState(data.games);
 
     const allPlayers = data.players;
@@ -50,10 +48,10 @@ const PPPScreen = ({ navigation }) => {
             axios.get('http://localhost:7777/getTeams')
                 .then((response) => {
                     const teamList = response.data['data'];
-                    setteam_id(response.data['id']);
-                    // console.log(teamList);
+                    team_id = response.data['id'];
+                    console.log(teamList);
                     setAllTeams(teamList);
-                    // console.log(allTeams);
+                    console.log(allTeams);
                     // some mysterious issues here...
                 })
                 .catch((error) => { console.error(error) })
@@ -68,14 +66,10 @@ const PPPScreen = ({ navigation }) => {
                 teamName: team,
             })
             .then((response) => {
-                
-                setgame_id(response.data['id']);
-                // console.log(gameList);
-                const host = response.data['host'];
-                const guest = response.data['guest'];
-                // console.log(typeof host);
-                const game_list = host.map((e, index) => allTeams[team_id.indexOf(e)]+'vs\n'+allTeams[team_id.indexOf(guest[index])]);
-                setAllGames(game_list);
+                const gameList = response.data['games'];
+                game_id = response.data['id'];
+                console.log(gameList);
+                setAllGames(gameList);
 
                 // some mysterious issues here...
             })
@@ -89,9 +83,10 @@ const PPPScreen = ({ navigation }) => {
             })
             .then((response) => {
                 const playerList = response.data['players'];
-                setplayer_id(response.data['id']);
+                player_id = response.data['id'];
+                console.log(playerList);
                 setPlayers(playerList);
-                console.log(players);
+
                 // some mysterious issues here...
             })
             .catch((error) => { console.error(error) })
@@ -101,8 +96,8 @@ const PPPScreen = ({ navigation }) => {
             .post
             ('http://localhost:7777/createPlay', {
 
-                player_id: targetPlayerId ,
-                game_id: targetGameId ,
+                player_id: targetPlayerId + 1,
+                game_id: targetGameId + 1,
                 type: target[3],
                 finish: target[4],
                 result: target[5],
@@ -122,18 +117,16 @@ const PPPScreen = ({ navigation }) => {
         if (currentQuestionIndex == 0) {
             setTargetTeam(selectedOption);
             getPlayersList(selectedOption);
-            getGamesList(team_id[index]);
+            getGamesList(selectedOption);
 
         }
         if (currentQuestionIndex == 1) {
             setTargetGame(selectedOption);
-            console.log(game_id[index]);
-            setTargetGameId(game_id[index]);
+            setTargetGameId(index);
         }
         if (currentQuestionIndex == 2) {
             setTargetPlayer(selectedOption);
-            console.log(player_id[index]);
-            setTargetPlayerId(player_id[index]);
+            setTargetPlayerId(index);
         }
 
         if (currentQuestionIndex == 3) {

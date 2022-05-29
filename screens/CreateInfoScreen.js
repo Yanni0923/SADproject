@@ -36,7 +36,7 @@ const CreateInfoScreen = ({ navigation }) => {
     const [position, setPosition] = useState("");
     const [name, onChangeName] = useState("");
     const [number, onChangeNumber] = useState("");
-
+    const [teamsId, setTeamsId] = useState([]);
     const [teams, setTeams] = useState([]);
 
     const getTeamsList = (() => {
@@ -44,7 +44,9 @@ const CreateInfoScreen = ({ navigation }) => {
         axios.get('http://localhost:7777/getTeams')
             .then((response) => {
                 const teamList = response.data['data'];
-                const teams_updated = teamList.map((e) => { return { label: e, value: e } });
+                setTeamsId(response.data['id']);
+                console.log(response.data['id']);
+                const teams_updated = teamList.map((e, index) => { return { label: e, value: response.data['id'][index] } });
                 console.log(teams_updated);
                 setTeams(teams_updated);
                 console.log(teams);

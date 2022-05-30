@@ -87,7 +87,7 @@ app.post('/createTeam', function (req, res) {
 app.post('/createGame', function (req, res) {
     const { host, guest, date } = req.body;
     db.query(
-        `INSERT INTO game(host, guest, date, highlights) VALUES (${host}, ${guest}, '${date}', 'https://www.youtube.com/watch?v=pKrFeThAfYs')`,
+        `INSERT INTO game(host, guest, date, highlights) VALUES (${host}, ${guest}, '${date}', '')`,
         
         function (err, rows, fields) {
             console.log(req.body);

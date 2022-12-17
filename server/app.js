@@ -3,7 +3,11 @@ const express = require("express");
 const db = require('./config/db');
 const app = express();
 const port = 7777;
-
+db.connect();
+db.query('SELECT 12 + 34 AS result', function(err, rows, fields) {
+    if (err) throw err;
+    console.log('連線成功');
+}); 
 const cors = require('cors');
 app.use(cors());
 
@@ -71,9 +75,9 @@ app.post("/signup", function (req, res) {
 app.post('/createTeam', function (req, res) {
     const { name, school, coach } = req.body;
     db.query(
-        `INSERT INTO team(name, school, coach) VALUES ('${name}', '${school}', '${coach}')`,
+        `INSERT INTO team(team_name, school, coach) VALUES ('${name}', '${school}', '${coach}')`,
         function (err, rows, fields) {
-            console.log(name);
+            console.log(school);
             if (err) {
                 error_msg = err.code + ": Server Error";
                 console.log(error_msg);

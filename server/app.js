@@ -2,7 +2,7 @@
 const express = require("express");
 const db = require('./config/db');
 const app = express();
-const port = 7777;
+const port = 7770;
 db.connect();
 db.query('SELECT 12 + 34 AS result', function(err, rows, fields) {
     if (err) throw err;

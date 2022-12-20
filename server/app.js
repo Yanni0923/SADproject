@@ -2,9 +2,9 @@
 const express = require("express");
 const db = require('./config/db');
 const app = express();
-const port = 7770;
+const port = 7777;
 db.connect();
-db.query('SELECT 12 + 34 AS result', function(err, rows, fields) {
+db.query('SELECT * FROM ntu_basketball.team;', function(err, rows, fields) {
     if (err) throw err;
     console.log('連線成功');
 }); 

@@ -91,7 +91,7 @@ app.post('/createTeam', function (req, res) {
 app.post('/createGame', function (req, res) {
     const { host, guest, date } = req.body;
     db.query(
-        `INSERT INTO game(host, guest, date, highlights) VALUES (${host}, ${guest}, '${date}', '')`,
+        `INSERT INTO game(game_host, game_guest, game_date, highlights) VALUES (${host}, ${guest}, '${date}', '')`,
         
         function (err, rows, fields) {
             console.log(req.body);
@@ -108,7 +108,7 @@ app.post('/createGame', function (req, res) {
 app.post('/createPlayer', function (req, res) {
     const { team, name, position, number } = req.body;
     db.query(
-        `INSERT INTO player( team, name, position, number, hand, height, weight) VALUES ('政治大學', '歐', 'C',23, 'right', 189, 90)`,
+        `INSERT INTO player( team_id, player_name, position, player_number, hand, height, weight) VALUES (${team}, '${name}', 'C',${number}, 'right', 189, 90)`,
         function (err, rows, fields) {
             console.log(team, name, position, number)
             if (err) {
@@ -126,7 +126,7 @@ app.get('/getTeams', (request, response) => {
     db.query(
         `SELECT * FROM team`,
         function (err, rows, fields) {
-            teams = getList(rows, 'name');
+            teams = getList(rows, 'team_name');
             id = getList(rows, 'team_id');
             console.log(teams);
             if (rows.length === 0) {
@@ -142,13 +142,14 @@ app.get('/getTeams', (request, response) => {
     )
 });
 app.post("/getPlayersByTeam", function (req, res) {
-
+    const { teamName } = req.body;
     db.query(
-        `SELECT * FROM player WHERE team='${req.body.teamName}';`,//WHERE team='${team}'
+        `SELECT * FROM ntu_basketball.player WHERE team_id=4;`,
+        // `SELECT * FROM ntu_basketball.player WHERE team_id= ${ teamName};`,//WHERE team='${team}'
         function (err, rows, fields) {
-            players = getList(rows, 'name');
+            players = getList(rows, 'player_name');
             id = getList(rows, 'player_id');
-            console.log(req.body.teamName);
+            console.log(teamName);
             console.log(players);
             if (rows.length === 0) {
                 console.log('No player found.');
@@ -163,17 +164,17 @@ app.post("/getPlayersByTeam", function (req, res) {
     );
 });
 app.post("/getGamesByTeam", function (req, res) {
-
+    
     db.query(
-        `SELECT * FROM game WHERE host = ${req.body.teamName} OR guest  = ${req.body.teamName};`,//WHERE host = ${req.body.teamName} OR guest  = ${req.body.teamName}
+        `SELECT * FROM game WHERE game_host = ${req.body.teamName} OR game_guest  = ${req.body.teamName};`,//WHERE host = ${req.body.teamName} OR guest  = ${req.body.teamName}
         function (err, rows, fields) {
-            console.log(req.body.teamName);
-            console.log(rows);
-            host = getList(rows, 'host');
-            guest = getList(rows, 'guest');
+            // console.log(req.body.teamName);
+            // console.log(rows);
+            host = getList(rows, 'game_host');
+            guest = getList(rows, 'game_guest');
             
             id = getList(rows, 'game_id');
-            
+            // console.log(type(req.body.teamName));
             if (rows.length === 0) {
                 console.log('No game found.');
             }
@@ -188,7 +189,7 @@ app.post("/getGamesByTeam", function (req, res) {
 });
 app.post('/createPlay', function (req, res) {
     db.query(
-        `INSERT INTO play(player_id, game_id, type, finish, result, free_throw) VALUES (${req.body.player_id}, ${req.body.game_id}, '${req.body.type}', '${req.body.finish}', '${req.body.result}', '${req.body.free_throw}')`,
+        `INSERT INTO play(player_id, game_id, play_type, finish, result, free_throw) VALUES (${req.body.player_id}, ${req.body.game_id}, '${req.body.type}', '${req.body.finish}', '${req.body.result}', '${req.body.free_throw}')`,
         function (err, rows, fields) {
             console.log(req.body);
             if (err) {

@@ -16,8 +16,8 @@ RUN npm run build
 # Prepare nginx
 # Pull nginx base image
 FROM nginx:1.17.1-alpine
-
+EXPOSE 80
 # Build file to nginx
 COPY --from=build /app/web-build /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d
+# COPY nginx.conf /etc/nginx/conf.d
